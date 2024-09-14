@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Image Display with Glitch Effects</title>
+    <title></title>
     <style>
         body, html {
             margin: 0;
@@ -31,7 +31,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: blur(50px); /* Apply blur effect to background image */
+            filter: blur(100px); /* Heavier blur for background */
         }
 
         #random-image {
@@ -39,50 +39,71 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            filter: blur(0.1px); /* Blur effect to make the image unreadable */
             transition: opacity 0.1s, transform 0.1s; /* Smooth transitions */
         }
 
-        /* Glitch effect */
+        /* Improved Glitch effect */
         .glitch {
-            animation: glitch 0.1s infinite;
+            animation: glitch 0.15s infinite;
         }
 
         @keyframes glitch {
             0% {
-                transform: translate(0) skew(0deg);
+                transform: translate(0, 0) skew(0deg);
                 opacity: 1;
-                clip: rect(0, auto, auto, 0);
+                clip: rect(0, 100%, 100%, 0);
+            }
+            10% {
+                transform: translate(-10px, -10px) skew(-2deg);
+                clip: rect(10px, 90%, 40px, 0);
             }
             20% {
-                transform: translate(-20px, 20px) skew(-10deg);
+                transform: translate(15px, -5px) skew(1deg);
+                clip: rect(20px, 80%, 70px, 0);
                 opacity: 0.7;
-                clip: rect(10px, auto, 80px, 0);
+            }
+            30% {
+                transform: translate(-20px, 15px) skew(-3deg);
+                clip: rect(30px, 70%, 60px, 0);
             }
             40% {
-                transform: translate(20px, -20px) skew(10deg);
-                opacity: 0.4;
-                clip: rect(30px, auto, 60px, 0);
+                transform: translate(5px, -10px) skew(2deg);
+                clip: rect(10px, 100%, 50px, 0);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(20px, 10px) skew(3deg);
+                clip: rect(40px, 90%, 20px, 0);
             }
             60% {
-                transform: translate(-30px, 30px) skew(-20deg);
+                transform: translate(-30px, 20px) skew(-4deg);
+                clip: rect(30px, 80%, 10px, 0);
                 opacity: 0.6;
-                clip: rect(20px, auto, 50px, 0);
+            }
+            70% {
+                transform: translate(10px, -15px) skew(2deg);
+                clip: rect(20px, 100%, 80px, 0);
             }
             80% {
-                transform: translate(30px, -30px) skew(15deg);
-                opacity: 0.3;
-                clip: rect(40px, auto, 70px, 0);
+                transform: translate(-5px, 30px) skew(3deg);
+                clip: rect(50px, 100%, 90px, 0);
+                opacity: 0.4;
+            }
+            90% {
+                transform: translate(25px, -25px) skew(-2deg);
+                clip: rect(60px, 100%, 40px, 0);
             }
             100% {
-                transform: translate(0) skew(0deg);
+                transform: translate(0, 0) skew(0deg);
+                clip: rect(0, 100%, 100%, 0);
                 opacity: 1;
-                clip: rect(0, auto, auto, 0);
             }
         }
 
-        /* Flicker effect */
+        /* Flicker effect (optional) */
         .flicker {
-            animation: flicker 0.05s infinite; /* Faster flicker */
+            animation: flicker 0.05s infinite;
         }
 
         @keyframes flicker {
@@ -118,9 +139,9 @@
             }
         }
 
-        /* Stutter effect */
+        /* Stutter effect (optional) */
         .stutter {
-            animation: stutter 0.05s infinite; /* Faster stutter */
+            animation: stutter 0.05s infinite;
         }
 
         @keyframes stutter {
@@ -201,7 +222,7 @@
 <body>
     <div id="image-container">
         <img id="background-image" src="https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/1.png" alt="Background Image">
-        <img id="random-image" src="https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/1.png" alt="Random Image">
+        <img id="random-image" src="https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/1.png" alt="Random Image" class="glitch">
         <div id="loading-spinner"></div> <!-- Loading spinner -->
         <div id="popup-image"></div> <!-- Popup image -->
     </div>
