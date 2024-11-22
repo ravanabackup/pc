@@ -192,7 +192,7 @@
             position: absolute;
             width: 20px;
             height: 20px;
-            background-image: url('https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/circle.gif');
+            background-image: url('https://raw.githubusercontent.com/ravanabackup/pc/main/circle.gif');
             background-size: contain;
             background-repeat: no-repeat;
             pointer-events: none; /* Prevents interaction with spinner */
@@ -221,8 +221,8 @@
 </head>
 <body>
     <div id="image-container">
-        <img id="background-image" src="https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/1.png" alt="Background Image">
-        <img id="random-image" src="https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/1.png" alt="Random Image" class="glitch">
+        <img id="background-image" src="https://raw.githubusercontent.com/ravanabackup/pc/main/media/1.png" alt="Background Image">
+        <img id="random-image" src="https://raw.githubusercontent.com/ravanabackup/pc/main/media/1.png" alt="Random Image" class="glitch">
         <div id="loading-spinner"></div> <!-- Loading spinner -->
         <div id="popup-image"></div> <!-- Popup image -->
     </div>
@@ -230,11 +230,11 @@
     <script>
        <script>
         const images = [
-            "https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/1.png",
-            "https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/2.png",
-            "https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/3.png",
-            "https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/4.png",
-            "https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/media/5.png"
+            "https://raw.githubusercontent.com/ravanabackup/pc/main/media/1.png",
+            "https://raw.githubusercontent.com/ravanabackup/pc/main/media/2.png",
+            "https://raw.githubusercontent.com/ravanabackup/pc/main/media/3.png",
+            "https://raw.githubusercontent.com/ravanabackup/pc/main/media/4.png",
+            "https://raw.githubusercontent.com/ravanabackup/pc/main/media/5.png"
         ];
 
         function getRandomImage() {
@@ -277,7 +277,7 @@
             }
             if (event.key.toLowerCase() === 'c') {
                 const popupImage = document.getElementById("popup-image");
-                popupImage.style.backgroundImage = "url('https://rawgithubusercontent.deno.dev/ravanabackup/pc/main/notresponding.png')";
+                popupImage.style.backgroundImage = "url('https://raw.githubusercontent.com/ravanabackup/pc/main/notresponding.png')";
                 popupImage.style.display = 'block';
             }
         });
