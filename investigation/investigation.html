@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Meridian is a local device inquest: hardware, display, graphics, network place, and coordinates of the computer running this page." />
+    <meta name="theme-color" content="#0c0a08" />
+    <title>Meridian — Device Inquest</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2314100e'/%3E%3Ccircle cx='16' cy='16' r='5.5' fill='none' stroke='%23e4a15a' stroke-width='1.6'/%3E%3Cpath d='M16 3.5v5.2M16 23.3v5.2M3.5 16h5.2M23.3 16h5.2' stroke='%23e4a15a' stroke-width='1.6'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,620;1,9..144,520&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0c0a08;
+        --panel: #13110e;
+        --ink: #f4ecdf;
+        --muted: #b5a898;
+        --faint: #8d8176;
+        --line: rgba(244, 236, 223, 0.14);
+        --amber: #e4a15a;
+        --amber-2: #f0c9a0;
+        --teal: #8ed9d0;
+        --hot: #e07a68;
+        --stamp: #d4654f;
+        --serif: "Fraunces", "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+        --sans: "Outfit", "Avenir Next", "Segoe UI", sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+        color-scheme: dark;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        text-rendering: optimizeLegibility;
+        overflow-x: hidden;
+      }
+      ::selection { background: var(--amber); color: #1a1208; }
+      :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+      a { color: var(--teal); }
+      button, .solid, .ghost { font: inherit; cursor: pointer; }
+      button:disabled { opacity: 0.55; cursor: default; }
+      .wrap { width: min(1440px, calc(100% - 32px)); margin: 0 auto; }
+      .kicker { font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--amber); }
+      .serif { font-family: var(--serif); font-optical-sizing: auto; }
+      .mono { font-family: var(--mono); }
+      .muted { color: var(--muted); }
+      .faint { color: var(--faint); }
+      .ghost, .solid {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        padding: 8px 12px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+      .ghost:hover { border-color: var(--amber); color: var(--amber); }
+      .solid { background: var(--amber); color: #1a1208; border-color: var(--amber); }
+      .tape { overflow: hidden; background: var(--amber); color: #1a1208; border-bottom: 1px solid var(--line); }
+      .tape-track { display: flex; width: max-content; animation: tape 42s linear infinite; }
+      .tape span { padding: 5px 16px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500; }
+      header.bar {
+        position: sticky; top: 0; z-index: 20;
+        background: rgba(12, 10, 8, 0.86);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+      }
+      .bar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+      .brand { display: flex; align-items: center; gap: 12px; color: var(--amber); }
+      .brand strong { display: block; color: var(--ink); font-family: var(--serif); font-size: 22px; font-weight: 520; line-height: 1; }
+      .hero { display: grid; gap: 32px; align-items: end; padding: 36px 0 8px; }
+      h1 { margin: 14px 0 0; font-family: var(--serif); font-weight: 520; font-size: clamp(3.2rem, 7vw, 6.3rem); line-height: 0.88; letter-spacing: -0.035em; }
+      h1 em { font-style: italic; color: var(--amber); }
+      h2 { margin: 8px 0 0; font-family: var(--serif); font-weight: 520; font-size: clamp(2rem, 4vw, 3.1rem); letter-spacing: -0.03em; }
+      .lede { max-width: 640px; color: var(--muted); font-size: 1.05rem; line-height: 1.55; }
+      .stamp { display: inline-block; transform: rotate(-2deg); border: 2px solid var(--stamp); color: var(--stamp); padding: 8px 12px; margin-top: 22px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+      .steps { list-style: none; padding: 0; margin: 28px 0 0; max-width: 420px; }
+      .steps li { display: flex; gap: 12px; padding: 5px 0; font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+      .steps li.on { color: var(--ink); }
+      .steps li.done { color: var(--amber); }
+      .plate {
+        position: relative; min-height: 540px; overflow: hidden; border: 1px solid var(--line);
+        background:
+          radial-gradient(circle at 72% 38%, rgba(228, 161, 90, 0.22), transparent 36%),
+          linear-gradient(100deg, #0c0a08 8%, rgba(12, 10, 8, 0.55) 48%, rgba(12, 10, 8, 0.2)),
+          repeating-linear-gradient(90deg, rgba(197, 106, 58, 0.16) 0 1px, transparent 1px 18px),
+          repeating-linear-gradient(0deg, rgba(142, 217, 208, 0.05) 0 1px, transparent 1px 22px),
+          #14110e;
+      }
+      .plate-inner { position: relative; min-height: 540px; display: flex; align-items: flex-end; padding: 18px; }
+      .schematic { width: 100%; border: 1px solid rgba(255,255,255,.14); background: rgba(12,10,8,.78); padding: 12px; }
+      .scanline { position: absolute; left: 0; right: 0; height: 22%; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(228,161,90,.22), transparent); animation: scan 2.6s ease-in-out infinite; }
+      .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); margin-top: 28px; }
+      .metric { background: var(--bg); padding: 16px; }
+      .metric b { display: block; margin-top: 8px; font-family: var(--serif); font-size: 1.55rem; font-weight: 520; line-height: 1.05; letter-spacing: -0.03em; }
+      .metric span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; }
+      .story { max-width: 920px; margin: 28px 0 0; font-family: var(--serif); font-size: clamp(1.35rem, 2vw, 1.7rem); line-height: 1.35; letter-spacing: -0.02em; }
+      .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+      .pill { border: 1px solid var(--line); color: var(--faint); padding: 4px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .pill.ok { color: var(--teal); border-color: rgba(142, 217, 208, .4); }
+      .pill.partial { color: var(--amber); border-color: rgba(228, 161, 90, .45); }
+      .section { margin-top: 56px; }
+      .place-grid, .doors, .ledger { display: grid; gap: 16px; }
+      .map-stack, .coord-card, .door, article.card { border: 1px solid var(--line); background: var(--panel); }
+      .graticule, .atlas { min-height: 280px; background: #100e0c; position: relative; }
+      .atlas iframe { width: 100%; height: 280px; border: 0; filter: grayscale(20%); }
+      .atlas .cap, .graticule .cap { position: absolute; left: 12px; right: 12px; bottom: 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+      .coord-card { padding: 18px 20px 16px; display: flex; flex-direction: column; }
+      .big { font-family: var(--serif); font-size: clamp(2.6rem, 5vw, 4.4rem); line-height: 0.86; letter-spacing: -0.03em; margin: 8px 0 0; }
+      .big i { font-style: normal; color: var(--amber); font-size: 0.42em; }
+      .sys { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding: 10px 0; }
+      .sys b { display: block; margin-top: 4px; font-weight: 400; font-family: var(--mono); font-size: 13px; word-break: break-word; }
+      .note { border: 1px solid rgba(228,161,90,.4); background: rgba(228,161,90,.08); padding: 10px 12px; font-size: 14px; line-height: 1.45; }
+      .note.warn { border-color: rgba(224,122,104,.5); color: var(--amber-2); }
+      .btnrow, .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .links a { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+      .toggle { display: inline-flex; border: 1px solid var(--line); margin-left: 8px; }
+      .toggle button { border: 0; background: transparent; color: var(--muted); padding: 4px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; }
+      .toggle button.on { background: var(--amber); color: #1a1208; }
+      .doors { grid-template-columns: 1fr; }
+      .door { padding: 16px; display: flex; flex-direction: column; }
+      .door h3 { margin: 0; font-family: var(--serif); font-size: 1.6rem; font-weight: 520; }
+      .door p { color: var(--muted); font-size: 14px; line-height: 1.5; flex: 1; }
+      .door .ghost { align-self: flex-start; margin-top: 12px; }
+      .err { color: var(--amber-2); font-size: 12px; line-height: 1.45; }
+      .filter { width: min(100%, 360px); }
+      .filter input, input[type="search"] {
+        width: 100%; margin-top: 8px; background: transparent; color: var(--ink);
+        border: 1px solid var(--line); padding: 8px 10px; font-family: var(--mono); font-size: 14px;
+      }
+      .toc-row { display: flex; gap: 8px; overflow: auto; margin-top: 14px; }
+      .toc-row a, .toc a { color: var(--muted); text-decoration: none; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+      .toc-row a { border: 1px solid var(--line); padding: 6px 8px; white-space: nowrap; }
+      .ledger-grid { display: grid; gap: 16px; margin-top: 18px; }
+      article.card { background: var(--panel); }
+      article.card header { padding: 20px 22px 16px; border-bottom: 1px solid var(--line); }
+      article.card h3 { margin: 8px 0 0; font-family: var(--serif); font-size: 1.8rem; font-weight: 520; }
+      .row { display: grid; gap: 4px; padding: 12px 22px; border-bottom: 1px solid var(--line); }
+      .row dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+      .row dd { margin: 0; font-family: var(--mono); font-size: 14px; line-height: 1.45; word-break: break-word; }
+      .row dd.break { word-break: break-all; }
+      .row dd.ok { color: var(--teal); }
+      .row dd.warn { color: var(--amber); }
+      .row dd.hot { color: var(--hot); }
+      .row dd.muted { color: var(--faint); }
+      .hint { display: block; margin-top: 4px; color: var(--muted); font-family: var(--sans); font-size: 12px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 22px 18px; max-height: 240px; overflow: auto; }
+      .chips span { border: 1px solid var(--line); padding: 4px 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+      footer.site { border-top: 1px solid var(--line); margin-top: 64px; padding: 36px 0 48px; }
+      footer.site .wrap { display: grid; gap: 18px; }
+      .watermark { position: fixed; right: -12px; top: 90px; z-index: 0; pointer-events: none; font-family: var(--serif); font-size: 18vw; line-height: 1; color: rgba(255,255,255,.035); }
+      #root { position: relative; z-index: 1; }
+      @keyframes tape { to { transform: translateX(-50%); } }
+      @keyframes scan { from { top: -24%; } to { top: 100%; } }
+      @media (min-width: 800px) {
+        .metrics { grid-template-columns: repeat(3, 1fr); }
+        .doors { grid-template-columns: 1fr 1fr; }
+        .place-grid { grid-template-columns: 1.3fr .9fr; }
+        .row { grid-template-columns: 0.8fr 1.5fr; gap: 12px; align-items: start; }
+      }
+      @media (min-width: 1100px) {
+        .hero { grid-template-columns: 1.15fr .85fr; }
+        .metrics { grid-template-columns: repeat(6, 1fr); }
+        .doors { grid-template-columns: 1fr 1fr 1fr; }
+        .ledger-grid { grid-template-columns: 190px 1fr; align-items: start; }
+        .toc { position: sticky; top: 92px; max-height: calc(100vh - 120px); overflow: auto; }
+        .toc a { display: block; padding: 6px 0; }
+        .toc a.on { color: var(--amber); }
+        .toc-row { display: none; }
+      }
+      @media (max-width: 1099px) { .toc { display: none; } }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .tape-track, .scanline { animation: none; }
+      }
+      @media print {
+        :root { --bg: #fffaf3; --panel: #fff; --ink: #1a1208; --muted: #5c5148; --faint: #6e6258; --line: rgba(26,18,8,.16); --amber: #8a4b12; --teal: #0f5e58; }
+        .tape, .ghost, .solid, .scanline, .watermark, .toc, .toc-row, .no-print { display: none !important; }
+        header.bar { position: static; }
+        body { background: white; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Meridian needs JavaScript to read the hardware surface this browser will admit.</noscript>
+    <script>
+      const STEPS = ["Platform identity","Display geometry","Graphics adapter","Memory and storage","Clocks and locale","Network place","Session signature"];
+      const TAPE = "LOCAL INQUEST   ·   THIS MACHINE ONLY   ·   HARDWARE SURFACE   ·   COORDINATES   ·   NETWORK PLACE   ·   NOT A REMOTE AGENT   ·   ";
+      const LIMITS = "A webpage cannot open the chassis. BIOS, serial numbers, motherboard model, disk model, and MAC address stay inside the operating system. This dossier is the voluntary surface: what this browser will say about the computer it is running on. It is assembled locally and is not sent to a collector.";
+      const FONTS = ["Segoe UI","Calibri","Cambria","Consolas","Candara","Constantia","Corbel","Tahoma","Georgia","Verdana","Trebuchet MS","Comic Sans MS","Impact","Palatino Linotype","Garamond","Courier New","Arial","Times New Roman","Helvetica Neue","Avenir","Menlo","Monaco","SF Pro","Gill Sans","Futura","Optima","Didot","American Typewriter","Geneva","Lucida Grande","Ubuntu","Cantarell","DejaVu Sans","Liberation Sans","Noto Sans","Roboto","Droid Sans","Yu Gothic","Malgun Gothic","Microsoft YaHei","SimSun","PingFang SC","Hiragino Sans"];
+      const state = { booting:true, rescanning:false, bootError:null, step:STEPS[0], dossier:null, ip:null, ipError:null, ipAt:null, ipState:"idle", gps:null, gpsState:"idle", gpsMessage:null, watching:false, watchId:null, battery:null, online:navigator.onLine, query:"", busy:null, media:null, displays:null, motion:null, midi:null, fonts:null, picks:[], pads:[], padsChecked:false, picked:"auto", copied:false };
+
+      const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+      const present = (value, fallback = "not reported") => {
+        if (value == null || value === "") return fallback;
+        if (typeof value === "boolean") return value ? "yes" : "no";
+        if (typeof value === "number") return Number.isFinite(value) ? String(value) : fallback;
+        if (Array.isArray(value)) return value.length ? value.map((x) => present(x, "")).filter(Boolean).join(" · ") : fallback;
+        if (ArrayBuffer.isView(value) && !(value instanceof DataView)) return Array.from(value).join(" × ");
+        return String(value);
+      };
+      const row = (label, value, hint, tone, breakAll) => {
+        const text = present(value);
+        const muted = ["not reported","withheld","API absent","unavailable","unsupported"].includes(text);
+        return { label, value: text, hint, tone: tone || (muted ? "muted" : ""), breakAll: !!breakAll };
+      };
+      const formatBytes = (n) => {
+        if (n == null || !Number.isFinite(n) || n < 0) return "—";
+        const units = ["B","KB","MB","GB","TB"];
+        let i = 0, v = n;
+        while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+        return `${v.toFixed(v >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+      };
+      const formatSeconds = (s) => {
+        if (s == null) return "—";
+        if (!Number.isFinite(s)) return "unknown";
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+        if (h > 48) return `${Math.round(h / 24)} d`;
+        if (h) return `${h} h ${m} m`;
+        if (m) return `${m} m`;
+        return `${Math.floor(s)} s`;
+      };
+      const pct = (n) => `${Math.round(n * 100)}%`;
+      const beat = (ms = 60) => new Promise((r) => setTimeout(r, ms));
+      const formatOffset = (minutesWest) => {
+        const total = -minutesWest, sign = total >= 0 ? "+" : "-", abs = Math.abs(total);
+        return `UTC${sign}${String(Math.floor(abs / 60)).padStart(2, "0")}:${String(abs % 60).padStart(2, "0")}`;
+      };
+      const formatDmsPart = (value, pos, neg) => {
+        const abs = Math.abs(value), deg = Math.floor(abs), minFloat = (abs - deg) * 60, min = Math.floor(minFloat), sec = (minFloat - min) * 60;
+        return `${deg}° ${String(min).padStart(2, "0")}' ${sec.toFixed(2).padStart(5, "0")}" ${value >= 0 ? pos : neg}`;
+      };
+      const toDMS = (lat, lon) => `${formatDmsPart(lat, "N", "S")}, ${formatDmsPart(lon, "E", "W")}`;
+      const signedDecimal = (lat, lon, d = 7) => `${lat.toFixed(d)}, ${lon.toFixed(d)}`;
+      const toUTM = (lat, lon) => {
+        if (lat < -80 || lat > 84) return "outside UTM latitude range";
+        const a = 6378137, f = 1 / 298.257223563, k0 = 0.9996, e2 = f * (2 - f), ep2 = e2 / (1 - e2);
+        let zone = Math.floor((lon + 180) / 6) + 1;
+        if (lat >= 56 && lat < 64 && lon >= 3 && lon < 12) zone = 32;
+        const lon0 = (((zone - 1) * 6 - 180 + 3) * Math.PI) / 180, latR = lat * Math.PI / 180, lonR = lon * Math.PI / 180;
+        const sinLat = Math.sin(latR), cosLat = Math.cos(latR), tanLat = Math.tan(latR);
+        const N = a / Math.sqrt(1 - e2 * sinLat * sinLat), T = tanLat * tanLat, C = ep2 * cosLat * cosLat, A = (lonR - lon0) * cosLat;
+        const e4 = e2 * e2, e6 = e4 * e2;
+        const M = a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * latR - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * latR) + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * latR) - 35 * e6 / 3072 * Math.sin(6 * latR));
+        const easting = k0 * N * (A + (1 - T + C) * A ** 3 / 6 + (5 - 18 * T + T * T + 72 * C - 58 * ep2) * A ** 5 / 120) + 500000;
+        let northing = k0 * (M + N * tanLat * (A ** 2 / 2 + (5 - T + 9 * C + 4 * C * C) * A ** 4 / 24 + (61 - 58 * T + T * T + 600 * C - 330 * ep2) * A ** 6 / 720));
+        if (lat < 0) northing += 10000000;
+        const band = "CDEFGHJKLMNPQRSTUVWX"[Math.floor((lat + 80) / 8)] || "";
+        return `${zone}${band}  ${easting.toFixed(1)} E  ${northing.toFixed(1)} N`;
+      };
+      const toPlusCode = (latitude, longitude) => {
+        const alphabet = "23456789CFGHJMPQRVWX";
+        let lat = Math.min(89.999999, Math.max(-90, latitude)) + 90;
+        let lonNorm = (((longitude + 180) % 360) + 360) % 360 - 180;
+        if (lonNorm === -180 && longitude > 0) lonNorm = 180;
+        let lon = lonNorm + 180;
+        if (lon >= 360) lon = 359.999999;
+        let code = "";
+        for (const place of [20, 1, 0.05, 0.0025, 0.000125]) {
+          const latDigit = Math.min(19, Math.max(0, Math.floor(lat / place)));
+          const lonDigit = Math.min(19, Math.max(0, Math.floor(lon / place)));
+          code += alphabet[latDigit] + alphabet[lonDigit];
+          lat -= latDigit * place;
+          lon -= lonDigit * place;
+        }
+        return `${code.slice(0, 8)}+${code.slice(8)}`;
+      };
+      const toMaidenhead = (lat, lon) => {
+        let adjLon = lon + 180, adjLat = lat + 90, locator = "";
+        locator += String.fromCharCode(65 + Math.floor(adjLon / 20)) + String.fromCharCode(65 + Math.floor(adjLat / 10));
+        adjLon %= 20; adjLat %= 10;
+        locator += String(Math.floor(adjLon / 2)) + String(Math.floor(adjLat));
+        adjLon = (adjLon % 2) * 12; adjLat = (adjLat % 1) * 24;
+        locator += String.fromCharCode(97 + Math.floor(adjLon)) + String.fromCharCode(97 + Math.floor(adjLat));
+        adjLon = (adjLon % 1) * 10; adjLat = (adjLat % 1) * 10;
+        return locator + String(Math.floor(adjLon)) + String(Math.floor(adjLat));
+      };
+      const GEOHASH = "0123456789bcdefghjkmnpqrstuvwxyz";
+      const toGeohash = (lat, lon, precision = 9) => {
+        let latMin = -90, latMax = 90, lonMin = -180, lonMax = 180, hash = "", bit = 0, ch = 0, even = true;
+        while (hash.length < precision) {
+          if (even) { const mid = (lonMin + lonMax) / 2; if (lon >= mid) { ch = (ch << 1) + 1; lonMin = mid; } else { ch <<= 1; lonMax = mid; } }
+          else { const mid = (latMin + latMax) / 2; if (lat >= mid) { ch = (ch << 1) + 1; latMin = mid; } else { ch <<= 1; latMax = mid; } }
+          even = !even; bit++;
+          if (bit === 5) { hash += GEOHASH[ch]; bit = 0; ch = 0; }
+        }
+        return hash;
+      };
+      const haversineKm = (lat1, lon1, lat2, lon2) => {
+        const R = 6371.0088, toR = (d) => d * Math.PI / 180, dLat = toR(lat2 - lat1), dLon = toR(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(toR(lat1)) * Math.cos(toR(lat2)) * Math.sin(dLon / 2) ** 2;
+        return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+      };
+      const bearingDeg = (lat1, lon1, lat2, lon2) => {
+        const toR = (d) => d * Math.PI / 180;
+        const y = Math.sin(toR(lon2 - lon1)) * Math.cos(toR(lat2));
+        const x = Math.cos(toR(lat1)) * Math.sin(toR(lat2)) - Math.sin(toR(lat1)) * Math.cos(toR(lat2)) * Math.cos(toR(lon2 - lon1));
+        return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+      };
+      const cardinal = (b) => ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(b / 22.5) % 16];
+      const formatDistance = (km) => km < 1 ? `${Math.round(km * 1000)} m` : km < 10 ? `${km.toFixed(2)} km` : km < 100 ? `${km.toFixed(1)} km` : `${Math.round(km).toLocaleString()} km`;
+      const accuracyGrade = (m) => m <= 15 ? "rooftop-grade" : m <= 50 ? "building-grade" : m <= 200 ? "street-grade" : m <= 1000 ? "neighborhood" : m <= 5000 ? "district" : "coarse";
+      const formatSpeed = (mps) => mps == null || !Number.isFinite(mps) ? "not reported" : `${mps.toFixed(1)} m/s · ${(mps * 3.6).toFixed(1)} km/h`;
+      const formatHeading = (deg) => deg == null || !Number.isFinite(deg) ? "not reported" : `${Math.round(deg)}° ${cardinal(deg)}`;
+      const formatAltitude = (m, acc) => m == null || !Number.isFinite(m) ? "not reported" : `${m.toFixed(1)} m${acc != null && Number.isFinite(acc) ? ` ±${Math.round(acc)} m` : ""}`;
+      const mapPad = (source, accuracy) => source === "ip" ? 0.09 : accuracy == null || accuracy < 40 ? 0.008 : accuracy < 250 ? 0.02 : accuracy < 2000 ? 0.06 : 0.18;
+      const osmEmbed = (lat, lon, pad) => {
+        const lonPad = pad / Math.max(0.25, Math.cos(lat * Math.PI / 180));
+        return `https://www.openstreetmap.org/export/embed.html?bbox=${(lon - lonPad).toFixed(5)}%2C${(lat - pad).toFixed(5)}%2C${(lon + lonPad).toFixed(5)}%2C${(lat + pad).toFixed(5)}&layer=mapnik&marker=${lat.toFixed(6)}%2C${lon.toFixed(6)}`;
+      };
+
+      async function digest(text) {
+        try {
+          if (crypto.subtle) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+            return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+          }
+        } catch (e) {}
+        let h = 5381;
+        for (let i = 0; i < text.length; i++) h = ((h << 5) + h) ^ text.charCodeAt(i);
+        return (h >>> 0).toString(16).padStart(8, "0");
+      }
+      const caseIdFrom = (hash) => { const h = hash.replace(/[^a-f0-9]/gi, "").padEnd(8, "0").slice(0, 8).toUpperCase(); return `MR-${h.slice(0, 4)}-${h.slice(4, 8)}`; };
+      const shortGpu = (renderer) => {
+        if (!renderer || renderer === "not reported") return "Adapter withheld";
+        return renderer.replace(/^ANGLE\s*\(/, "").replace(/\)$/, "").replace(/,?\s*(Direct3D|OpenGL|Vulkan).*$/i, "").split(",")[0].trim() || renderer;
+      };
+      const describeOs = (ua, platformHint, platformVersion) => {
+        const p = (platformHint || "").toLowerCase();
+        if (p.includes("win") || /Windows/.test(ua)) {
+          const major = platformVersion ? parseInt(platformVersion, 10) : NaN;
+          if (major >= 13) return `Windows 11 · platform ${platformVersion}`;
+          if (Number.isFinite(major) && major > 0 && major < 13) return `Windows 10 · platform ${platformVersion}`;
+          if (/Windows NT 10/.test(ua)) return "Windows 10/11 (legacy UA still says NT 10.0)";
+          return "Windows";
+        }
+        if (p === "macos" || /Mac OS X/.test(ua)) return platformVersion ? `macOS ${platformVersion}` : "macOS";
+        if (p === "android" || /Android/.test(ua)) return `Android ${platformVersion || (ua.match(/Android ([0-9.]+)/) || [])[1] || ""}`.trim();
+        if (p === "ios" || /iPhone|iPad|iPod/.test(ua)) return platformVersion ? `iOS ${platformVersion}` : "iOS / iPadOS";
+        if (p === "chrome os" || /CrOS/.test(ua)) return platformVersion ? `ChromeOS ${platformVersion}` : "ChromeOS";
+        if (p === "linux" || /Linux/.test(ua)) return "Linux";
+        return platformHint || "Unknown operating system";
+      };
+      const describeBrowser = (ua, brave) => {
+        if (brave) return { name: "Brave", version: (ua.match(/Chrome\/([\d.]+)/) || [])[1] || "" };
+        if (/Edg\//.test(ua)) return { name: "Microsoft Edge", version: (ua.match(/Edg\/([\d.]+)/) || [])[1] || "" };
+        if (/OPR\//.test(ua)) return { name: "Opera", version: (ua.match(/OPR\/([\d.]+)/) || [])[1] || "" };
+        if (/Firefox\//.test(ua)) return { name: "Firefox", version: (ua.match(/Firefox\/([\d.]+)/) || [])[1] || "" };
+        if (/Chrome\//.test(ua)) return { name: "Chrome", version: (ua.match(/Chrome\/([\d.]+)/) || [])[1] || "" };
+        if (/Version\/[\d.]+.*Safari\//.test(ua)) return { name: "Safari", version: (ua.match(/Version\/([\d.]+)/) || [])[1] || "" };
+        return { name: "Unknown browser", version: "" };
+      };
+      const isRecord = (v) => typeof v === "object" && v !== null;
+      const strField = (o, k) => typeof o[k] === "string" && o[k] ? o[k] : undefined;
+      const numField = (o, k) => typeof o[k] === "number" && Number.isFinite(o[k]) ? o[k] : undefined;
+      async function fetchJson(url, ms = 8000) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), ms);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal });
+          if (!res.ok) throw new Error(String(res.status));
+          return await res.json();
+        } finally { clearTimeout(timer); }
+      }
+      async function lookupIp() {
+        const attempts = [
+          { name: "ipwho.is", url: "https://ipwho.is/", parse: (json) => {
+            if (!isRecord(json) || json.success === false || typeof json.ip !== "string") return null;
+            const tz = json.timezone, conn = json.connection;
+            return { ip: json.ip, version: strField(json, "type"), city: strField(json, "city"), region: strField(json, "region"), country: strField(json, "country"), countryCode: strField(json, "country_code"), postal: strField(json, "postal"), lat: numField(json, "latitude"), lon: numField(json, "longitude"), timezone: isRecord(tz) ? strField(tz, "id") : strField(json, "timezone"), isp: isRecord(conn) ? strField(conn, "isp") : undefined, org: isRecord(conn) ? strField(conn, "org") : undefined, asn: isRecord(conn) && typeof conn.asn === "number" ? `AS${conn.asn}` : undefined, source: "ipwho.is" };
+          }},
+          { name: "ipapi.co", url: "https://ipapi.co/json/", parse: (json) => {
+            if (!isRecord(json) || json.error || typeof json.ip !== "string") return null;
+            return { ip: json.ip, version: strField(json, "version"), city: strField(json, "city"), region: strField(json, "region"), country: strField(json, "country_name"), countryCode: strField(json, "country"), postal: strField(json, "postal"), lat: numField(json, "latitude"), lon: numField(json, "longitude"), timezone: strField(json, "timezone"), isp: strField(json, "org"), org: strField(json, "org"), asn: strField(json, "asn"), source: "ipapi.co" };
+          }},
+          { name: "ipify", url: "https://api.ipify.org?format=json", parse: (json) => isRecord(json) && typeof json.ip === "string" ? { ip: json.ip, source: "ipify" } : null }
+        ];
+        const errors = [];
+        for (const attempt of attempts) {
+          try {
+            const place = attempt.parse(await fetchJson(attempt.url));
+            if (place && place.ip) return { place, error: null };
+            errors.push(`${attempt.name} empty`);
+          } catch (err) { errors.push(`${attempt.name} ${err instanceof Error ? err.message : "failed"}`); }
+        }
+        return { place: null, error: errors.join(" · ") || "Network place lookup failed." };
+      }
+      function readWebGL() {
+        const canvas = document.createElement("canvas");
+        const gl2 = canvas.getContext("webgl2");
+        const gl = gl2 || canvas.getContext("webgl");
+        if (!gl) return { api: "unavailable", unmaskedRenderer: "not reported", unmaskedVendor: "not reported", vendor: "not reported", renderer: "not reported", version: "not reported", shading: "not reported", maxTexture: "not reported", maxViewport: "not reported", anisotropy: "not reported", extensions: [], note: "" };
+        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        const aniso = gl.getExtension("EXT_texture_filter_anisotropic") || gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic");
+        const p = (n) => { try { return gl.getParameter(n); } catch (e) { return null; } };
+        const unmaskedRenderer = dbg ? present(p(dbg.UNMASKED_RENDERER_WEBGL)) : "withheld";
+        const note = /swiftshader|llvmpipe|softpipe|basic render/i.test(unmaskedRenderer) ? "Software renderer. The physical GPU is hidden — common in VMs, remote desktops, or when acceleration is off." : "";
+        return { api: gl2 ? "WebGL 2" : "WebGL 1", unmaskedVendor: dbg ? present(p(dbg.UNMASKED_VENDOR_WEBGL)) : "withheld", unmaskedRenderer, vendor: present(p(gl.VENDOR)), renderer: present(p(gl.RENDERER)), version: present(p(gl.VERSION)), shading: present(p(gl.SHADING_LANGUAGE_VERSION)), maxTexture: present(p(gl.MAX_TEXTURE_SIZE)), maxViewport: present(p(gl.MAX_VIEWPORT_DIMS)), anisotropy: aniso ? present(p(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) : "not reported", extensions: gl.getSupportedExtensions() || [], note, maxAttribs: present(p(gl.MAX_VERTEX_ATTRIBS)), maxVarying: present(p(gl.MAX_VARYING_VECTORS)) };
+      }
+      async function readWebGPU() {
+        if (!navigator.gpu) return { supported: "API absent", description: "not reported", vendor: "not reported", architecture: "not reported" };
+        try {
+          const adapter = await navigator.gpu.requestAdapter();
+          if (!adapter) return { supported: "present, no adapter", description: "not reported", vendor: "not reported", architecture: "not reported" };
+          const info = adapter.info || (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {});
+          return { supported: "adapter admitted", vendor: info.vendor || "not reported", architecture: info.architecture || "not reported", description: info.description || "not reported", fallback: present(adapter.isFallbackAdapter) };
+        } catch (err) { return { supported: "blocked", description: err instanceof Error ? err.message : "blocked", vendor: "not reported", architecture: "not reported" }; }
+      }
+      const measureHz = () => new Promise((resolve) => {
+        let frames = 0; const start = performance.now();
+        const tick = (t) => { frames++; if (t - start >= 420) { const hz = Math.round(frames * 1000 / (t - start)); resolve(hz >= 20 && hz <= 360 ? hz : null); return; } requestAnimationFrame(tick); };
+        requestAnimationFrame(tick);
+      });
+      async function readBattery() {
+        if (!navigator.getBattery) return null;
+        try { const b = await navigator.getBattery(); return { level: b.level, charging: b.charging, chargingTime: b.chargingTime, dischargingTime: b.dischargingTime }; }
+        catch (e) { return null; }
+      }
+      function localCandidates() {
+        return new Promise((resolve) => {
+          const found = new Set();
+          let pc; try { pc = new RTCPeerConnection({ iceServers: [] }); } catch (e) { resolve([]); return; }
+          let settled = false;
+          const finish = () => { if (settled) return; settled = true; try { pc.close(); } catch (e) {} resolve([...found]); };
+          const timer = setTimeout(finish, 1400);
+          pc.onicecandidate = (event) => {
+            if (!event.candidate) { clearTimeout(timer); finish(); return; }
+            const ips = event.candidate.candidate.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b|[a-f0-9:]+:[a-f0-9:]+|[a-z0-9-]+\.local/gi) || [];
+            ips.forEach((ip) => { if (ip !== "0.0.0.0") found.add(ip); });
+          };
+          try { pc.createDataChannel("meridian"); pc.createOffer().then((o) => pc.setLocalDescription(o)).catch(() => { clearTimeout(timer); finish(); }); }
+          catch (e) { clearTimeout(timer); finish(); }
+        });
+      }
+      const ipKind = (ip) => ip.endsWith(".local") ? "mDNS host — LAN address hidden" : ip.startsWith("10.") || ip.startsWith("192.168.") || /^172\.(1[6-9]|2\d|3[0-1])\./.test(ip) ? "private LAN" : ip.startsWith("127.") ? "loopback" : ip.includes(":") ? "IPv6" : "public or uncategorized";
+      function detectFonts() {
+        const bases = ["monospace", "sans-serif", "serif"];
+        const span = document.createElement("span");
+        span.textContent = "mmmmmmmmmmlliWW@";
+        span.style.cssText = "position:absolute;left:-9999px;font-size:72px";
+        document.body.appendChild(span);
+        try {
+          const widths = {};
+          bases.forEach((b) => { span.style.fontFamily = b; widths[b] = span.getBoundingClientRect().width; });
+          return FONTS.filter((font) => bases.some((b) => { span.style.fontFamily = `"${font}", ${b}`; return Math.abs(span.getBoundingClientRect().width - widths[b]) > 0.5; }));
+        } finally { span.remove(); }
+      }
+      function readVoices() {
+        if (!window.speechSynthesis) return Promise.resolve([]);
+        const read = () => speechSynthesis.getVoices().map((v) => `${v.name} · ${v.lang}${v.localService ? " · local" : ""}`);
+        if (read().length) return Promise.resolve(read());
+        return new Promise((resolve) => {
+          let done = false;
+          const finish = () => { if (done) return; done = true; speechSynthesis.removeEventListener("voiceschanged", finish); resolve(read()); };
+          speechSynthesis.addEventListener("voiceschanged", finish);
+          setTimeout(finish, 800);
+        });
+      }
+      async function canvasHash() {
+        try {
+          const c = document.createElement("canvas"); c.width = 280; c.height = 64;
+          const ctx = c.getContext("2d"); if (!ctx) return "unavailable";
+          ctx.fillStyle = "#14110e"; ctx.fillRect(0, 0, 280, 64);
+          ctx.font = "18px 'Times New Roman'"; ctx.fillStyle = "#e4a15a"; ctx.fillText("Meridian Δ 07", 12, 28);
+          ctx.strokeStyle = "#1f8a84"; ctx.strokeRect(220, 16, 40, 32);
+          return digest(c.toDataURL());
+        } catch (e) { return "withheld"; }
+      }
+      async function audioSignature() {
+        const Offline = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        if (!Offline) return "unavailable";
+        try {
+          const ctx = new Offline(1, 44100, 44100), osc = ctx.createOscillator(), comp = ctx.createDynamicsCompressor();
+          osc.type = "triangle"; osc.frequency.value = 10000; comp.threshold.value = -50; comp.ratio.value = 12;
+          osc.connect(comp); comp.connect(ctx.destination); osc.start(0);
+          const buffer = await ctx.startRendering(), data = buffer.getChannelData(0);
+          let sum = 0; for (let i = 4500; i < 5000 && i < data.length; i++) sum += Math.abs(data[i]);
+          return `${buffer.sampleRate} Hz · sample ${sum.toFixed(8)}`;
+        } catch (e) { return "withheld"; }
+      }
+      async function readPermissions() {
+        if (!navigator.permissions || !navigator.permissions.query) return [row("Permissions API", "API absent")];
+        const names = ["geolocation","camera","microphone","notifications","persistent-storage","accelerometer","gyroscope","magnetometer","clipboard-read","midi","screen-wake-lock"];
+        return Promise.all(names.map(async (name) => {
+          try {
+            const status = await navigator.permissions.query({ name });
+            return row(name, status.state, undefined, status.state === "granted" ? "ok" : status.state === "denied" ? "warn" : "");
+          } catch (e) { return row(name, "unsupported"); }
+        }));
+      }
+      const zoneName = (timeZone, date) => {
+        try { return new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "longOffset" }).formatToParts(date).find((p) => p.type === "timeZoneName")?.value || "not reported"; }
+        catch (e) { return "not reported"; }
+      };
+      const mediaMatches = (q) => window.matchMedia(q).matches;
+      const gamut = () => mediaMatches("(color-gamut: rec2020)") ? "rec2020" : mediaMatches("(color-gamut: p3)") ? "Display P3" : mediaMatches("(color-gamut: srgb)") ? "sRGB" : "not reported";
+      const storageFlag = (fn) => { try { fn(); return "available"; } catch (e) { return "blocked"; } };
+
+      async function investigate(onStep) {
+        onStep("Platform identity");
+        const ipPromise = lookupIp(), batteryPromise = readBattery(), rtcPromise = localCandidates(), voicePromise = readVoices(), gpuPromise = readWebGPU(), hzPromise = measureHz();
+        const ua = navigator.userAgent, uaData = navigator.userAgentData;
+        let hints = {};
+        if (uaData && uaData.getHighEntropyValues) { try { hints = await uaData.getHighEntropyValues(["architecture","bitness","model","platformVersion","fullVersionList","wow64","formFactors"]); } catch (e) {} }
+        let brave = false;
+        try { if (navigator.brave && navigator.brave.isBrave) brave = await navigator.brave.isBrave(); } catch (e) {}
+        const browser = describeBrowser(ua, brave);
+        const os = describeOs(ua, hints.platform || (uaData && uaData.platform), hints.platformVersion);
+        const mobile = (uaData && uaData.mobile) || /Mobi|Android|iPhone|iPad/.test(ua);
+        const cores = navigator.hardwareConcurrency || 0;
+        const memoryGb = navigator.deviceMemory == null ? null : navigator.deviceMemory;
+        await beat();
+        onStep("Display geometry");
+        const hz = await hzPromise;
+        await beat();
+        onStep("Graphics adapter");
+        const gl = readWebGL();
+        const webgpu = await gpuPromise;
+        await beat();
+        onStep("Memory and storage");
+        let estimate = null, persisted = null;
+        try { estimate = await navigator.storage.estimate(); } catch (e) {}
+        try { persisted = await navigator.storage.persisted(); } catch (e) {}
+        const heap = performance.memory;
+        const battery = await batteryPromise;
+        await beat();
+        onStep("Clocks and locale");
+        const dt = Intl.DateTimeFormat().resolvedOptions();
+        const fonts = detectFonts();
+        const voices = await voicePromise;
+        const perms = await readPermissions();
+        let mediaSummary = "API absent";
+        if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+          try {
+            const list = await navigator.mediaDevices.enumerateDevices();
+            const count = (k) => list.filter((d) => d.kind === k).length;
+            mediaSummary = `${count("audioinput")} audio in · ${count("videoinput")} video in · ${count("audiooutput")} audio out${list.some((d) => d.label) ? " · labels open" : " · labels closed"}`;
+          } catch (e) { mediaSummary = "withheld"; }
+        }
+        await beat();
+        onStep("Network place");
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const candidates = await rtcPromise;
+        const ipResult = await ipPromise;
+        await beat();
+        onStep("Session signature");
+        const canvas = await canvasHash();
+        const audio = await audioSignature();
+        const gpuFull = gl.unmaskedRenderer !== "not reported" && gl.unmaskedRenderer !== "withheld" ? gl.unmaskedRenderer : gl.renderer;
+        const fingerprint = await digest([ua, os, cores, memoryGb ?? "", gpuFull, screen.width, screen.height, devicePixelRatio, dt.timeZone || "", navigator.language, canvas, audio].join("|"));
+        const connection = conn ? [conn.effectiveType, conn.type, conn.downlink != null ? `${conn.downlink} Mb/s` : null, conn.rtt != null ? `${conn.rtt} ms RTT` : null, conn.saveData ? "save-data" : null].filter(Boolean).join(" · ") : "not reported";
+        const navTiming = performance.getEntriesByType("navigation")[0];
+        const summary = {
+          os, browser: browser.version ? `${browser.name} ${browser.version}` : browser.name,
+          cpu: cores ? `${cores} logical processors` : "processor count not reported",
+          memory: memoryGb != null ? `${memoryGb} GB memory bucket` : "memory not reported",
+          gpu: shortGpu(gpuFull), gpuFull, display: `${screen.width}×${screen.height} @ ${devicePixelRatio}×`,
+          hz: hz ? `${hz} Hz` : "not measured", timezone: dt.timeZone || "not reported", locale: dt.locale || navigator.language,
+          secure: window.isSecureContext, deviceClass: mobile && screen.width < 720 ? "Phone-class" : mobile ? "Tablet-class" : "Desktop-class",
+          cores, memoryGb, dpr: devicePixelRatio, connection
+        };
+        const brands = uaData && uaData.brands ? uaData.brands.map((b) => `${b.brand} ${b.version}`).join(" · ") : "not reported";
+        const fullVersions = Array.isArray(hints.fullVersionList) ? hints.fullVersionList.map((b) => [b.brand, b.version].filter(Boolean).join(" ")).join(" · ") : "not reported";
+        const coverage = [
+          ["Processor count", cores ? "admitted" : "withheld"],
+          ["Memory bucket", memoryGb != null ? "admitted" : "withheld"],
+          ["GPU identity", gl.unmaskedRenderer !== "withheld" && gl.unmaskedRenderer !== "not reported" ? "admitted" : gl.api === "unavailable" ? "withheld" : "partial"],
+          ["WebGPU", webgpu.supported === "adapter admitted" ? "admitted" : webgpu.supported === "API absent" ? "withheld" : "partial"],
+          ["Refresh rate", hz ? "admitted" : "withheld"],
+          ["Battery", battery ? "admitted" : "withheld"],
+          ["Storage quota", estimate && estimate.quota ? "admitted" : "withheld"],
+          ["Network quality", conn ? "admitted" : "withheld"],
+          ["Public place", ipResult.place && ipResult.place.lat != null ? "admitted" : ipResult.place ? "partial" : "withheld"],
+          ["LAN addresses", candidates.some((c) => !c.endsWith(".local")) ? "admitted" : candidates.length ? "partial" : "withheld"],
+          ["Client hints", hints.platformVersion ? "admitted" : uaData ? "partial" : "withheld"],
+          ["Font set", fonts.length ? "admitted" : "withheld"],
+          ["Canvas signature", canvas.length > 16 ? "admitted" : "withheld"],
+          ["Audio signature", audio.includes("Hz") ? "admitted" : "withheld"]
+        ].map(([name, st]) => ({ name, state: st }));
+        const fontHint = [["Segoe UI","Calibri","Consolas"].some((f) => fonts.includes(f)) ? "Windows fonts present" : "", ["Menlo","Helvetica Neue","SF Pro","Avenir"].some((f) => fonts.includes(f)) ? "Apple fonts present" : "", ["Ubuntu","Cantarell","DejaVu Sans"].some((f) => fonts.includes(f)) ? "Linux fonts present" : ""].filter(Boolean).join(" · ") || "no platform-typical fonts confirmed";
+        const sections = [
+          { id: "platform", title: "Platform identity", lede: "Who the browser says it is. Client hints are more honest than the frozen legacy user-agent string.", rows: [
+            row("User agent", ua, "Legacy string. Often frozen, so do not treat it as a full version.", "", true),
+            row("Browser", summary.browser), row("Engine brands", brands), row("Full version list", fullVersions, "", "", true),
+            row("Operating system", os), row("navigator.platform", navigator.platform, "Deprecated, but still a useful coarse label."),
+            row("Architecture", hints.architecture), row("Bitness", hints.bitness), row("WoW64", hints.wow64), row("Device model", hints.model, "Usually filled on phones, empty on desktops."),
+            row("Form factors", Array.isArray(hints.formFactors) ? hints.formFactors.join(", ") : hints.formFactors),
+            row("Vendor", navigator.vendor), row("Mobile hint", mobile), row("Device class", summary.deviceClass, "Inferred from the mobile hint, touch, and screen. Not a chassis inspection."),
+            row("Languages", (navigator.languages || [navigator.language]).join(", ")), row("Do Not Track", navigator.doNotTrack || "not set"),
+            row("Global Privacy Control", navigator.globalPrivacyControl), row("Cookies enabled", navigator.cookieEnabled),
+            row("PDF viewer", "pdfViewerEnabled" in navigator ? navigator.pdfViewerEnabled : "not reported"),
+            row("Origin", location.origin), row("Secure context", isSecureContext, "Geolocation and device pickers require this."),
+            row("Referrer origin", document.referrer ? (() => { try { return new URL(document.referrer).origin; } catch (e) { return "unparsed"; } })() : "none", "Only the origin is kept."),
+            row("Automation flag", navigator.webdriver, navigator.webdriver ? "This session advertises navigator.webdriver." : "Not advertising webdriver.", navigator.webdriver ? "hot" : "ok")
+          ]},
+          { id: "compute", title: "Processor and memory", lede: "Logical processors are threads, not necessarily physical cores. Device memory is a bucket, often capped at 8 GB.", rows: [
+            row("Logical processors", cores || "not reported", "navigator.hardwareConcurrency. Includes hyperthreads."),
+            row("Device memory bucket", memoryGb != null ? `${memoryGb} GB` : "not reported", "Coarse RAM estimate. Not a DIMM readout."),
+            row("JS heap limit", heap ? formatBytes(heap.jsHeapSizeLimit) : "not reported", "Chrome-only. A JavaScript heap ceiling, not installed RAM."),
+            row("JS heap used", heap ? formatBytes(heap.usedJSHeapSize) : "not reported"),
+            row("WebGPU", webgpu.supported), row("WebGPU vendor", webgpu.vendor), row("WebGPU architecture", webgpu.architecture),
+            row("WebGPU description", webgpu.description, "", "", true), row("WebGPU fallback", webgpu.fallback)
+          ]},
+          { id: "graphics", title: "Graphics adapter", lede: gl.note || "The unmasked WebGL renderer is the closest a page gets to the graphics card.", rows: [
+            row("API", gl.api), row("Unmasked vendor", gl.unmaskedVendor), row("Unmasked renderer", gl.unmaskedRenderer, gl.note, /swiftshader|llvmpipe|softpipe/i.test(gpuFull) ? "warn" : "", true),
+            row("Generic vendor", gl.vendor), row("Generic renderer", gl.renderer), row("Version", gl.version, "", "", true), row("Shading language", gl.shading),
+            row("Max texture size", gl.maxTexture), row("Max viewport", gl.maxViewport), row("Max vertex attributes", gl.maxAttribs), row("Max varying vectors", gl.maxVarying),
+            row("Max anisotropy", gl.anisotropy), row("Extension count", gl.extensions.length)
+          ], chips: gl.extensions, chipsLabel: "WebGL extensions" },
+          { id: "display", title: "Display and optics", lede: "Screen figures are CSS pixels unless noted. The framebuffer estimate is width times devicePixelRatio, not a panel datasheet.", rows: [
+            row("Screen", `${screen.width} × ${screen.height}`), row("Available", `${screen.availWidth} × ${screen.availHeight}`),
+            row("Window outer", `${outerWidth} × ${outerHeight}`), row("Window inner", `${innerWidth} × ${innerHeight}`),
+            row("Window position", `${screenX}, ${screenY}`),
+            row("Visual viewport", visualViewport ? `${Math.round(visualViewport.width)} × ${Math.round(visualViewport.height)} · scale ${visualViewport.scale}` : "not reported"),
+            row("Device pixel ratio", devicePixelRatio), row("Estimated framebuffer", `${Math.round(screen.width * devicePixelRatio)} × ${Math.round(screen.height * devicePixelRatio)}`),
+            row("Color depth", `${screen.colorDepth}-bit`), row("Orientation", screen.orientation ? screen.orientation.type : "not reported"),
+            row("Color gamut", gamut()), row("Dynamic range", mediaMatches("(dynamic-range: high)") ? "high (HDR)" : "standard"),
+            row("Color scheme", mediaMatches("(prefers-color-scheme: dark)") ? "dark" : "light"),
+            row("Reduced motion", mediaMatches("(prefers-reduced-motion: reduce)")), row("Pointer", mediaMatches("(pointer: fine)") ? "fine" : mediaMatches("(pointer: coarse)") ? "coarse" : "none"),
+            row("Hover", mediaMatches("(hover: hover)") ? "hover" : "none"), row("Extended display flag", screen.isExtended),
+            row("Refresh estimate", hz ? `${hz} Hz` : "not measured", "Sampled for about 420 ms. Background tabs read low."), row("Max touch points", navigator.maxTouchPoints || 0)
+          ]},
+          { id: "storage", title: "Storage and persistence", lede: "Quota is what this origin may store, not the size of the disk. A tiny quota sometimes accompanies private mode, but it is not proof.", rows: [
+            row("Quota", estimate && estimate.quota != null ? formatBytes(estimate.quota) : "not reported"),
+            row("Usage", estimate && estimate.usage != null ? formatBytes(estimate.usage) : "not reported"),
+            row("Usage of quota", estimate && estimate.quota ? pct(estimate.usage / estimate.quota) : "not reported"),
+            row("Persisted storage", persisted), row("localStorage", storageFlag(() => { localStorage.setItem("__m", "1"); localStorage.removeItem("__m"); })),
+            row("sessionStorage", storageFlag(() => { sessionStorage.setItem("__m", "1"); sessionStorage.removeItem("__m"); })),
+            row("IndexedDB", indexedDB ? "available" : "absent"), row("Cache storage", window.caches ? "available" : "absent"),
+            row("Service worker", navigator.serviceWorker ? "available" : "absent"), row("Origin private file system", navigator.storage && "getDirectory" in navigator.storage ? "API present" : "API absent")
+          ]},
+          { id: "power", title: "Power", lede: "Many desktop browsers removed the Battery API. A missing reading usually means mains power or a withheld sensor, not a dead battery.", rows: [
+            row("Battery API", battery ? "admitted" : "withheld", "", battery ? "ok" : "muted"),
+            row("Level", battery ? pct(battery.level) : "not reported"), row("Charging", battery ? battery.charging : "not reported", "", battery && battery.charging ? "ok" : ""),
+            row("Time to full", battery ? formatSeconds(battery.chargingTime) : "not reported"), row("Time to empty", battery ? formatSeconds(battery.dischargingTime) : "not reported")
+          ]},
+          { id: "network", title: "Network surface", lede: "Public address and city sit in Network place. Modern browsers often replace LAN addresses with mDNS names. That is protection, not a failed scan.", rows: [
+            row("Online flag", navigator.onLine, "A captive portal can still say online."), row("Connection", connection),
+            row("Page protocol", location.protocol.replace(":", "")), row("Next hop", navTiming ? navTiming.nextHopProtocol : "not reported"),
+            row("Bluetooth radio", navigator.bluetooth ? "API present" : "API absent", "Availability is not a device list."),
+            row("WebUSB", "usb" in navigator ? "API present" : "API absent"), row("WebHID", "hid" in navigator ? "API present" : "API absent"), row("Web Serial", "serial" in navigator ? "API present" : "API absent"),
+            row("Local candidates", candidates.length ? candidates.map((ip) => `${ip} (${ipKind(ip)})`).join("  ·  ") : "none observed", "", candidates.length ? "" : "muted", true)
+          ]},
+          { id: "clocks", title: "Clock, locale, input", lede: "Timezone disagreement with the network place is a classic VPN, proxy, or travel signal. It is a lead, not a verdict.", rows: [
+            row("Time zone", dt.timeZone), row("Offset now", formatOffset(new Date().getTimezoneOffset())),
+            row("January offset", zoneName(dt.timeZone, new Date(Date.UTC(2026, 0, 15)))), row("July offset", zoneName(dt.timeZone, new Date(Date.UTC(2026, 6, 15)))),
+            row("Locale", dt.locale), row("Calendar", dt.calendar), row("Numbering system", dt.numberingSystem), row("Hour cycle", dt.hourCycle || "not reported"),
+            row("Captured at", new Date().toISOString()), row("Media devices, unlabeled", mediaSummary), row("Speech voices", voices.length ? `${voices.length} voices` : "none yet")
+          ], chips: voices, chipsLabel: "Speech synthesis voices" },
+          { id: "permissions", title: "Permission posture", lede: "Current states, not a request. Denied means the person or a policy already closed that door.", rows: perms },
+          { id: "fonts", title: "Fonts the browser can paint", lede: "Presence is inferred by measuring text. A hit means the font is available to the page, not that it is the system UI font.", rows: [row("Detected in probe list", fonts.length ? `${fonts.length} of ${FONTS.length}` : "none"), row("Platform suggestion", fontHint)], chips: fonts, chipsLabel: "Detected families" },
+          { id: "integrity", title: "Session integrity", lede: "Flags that often differ in scripted or spoofed sessions. None of them, alone, proves a fake machine.", rows: [
+            row("navigator.webdriver", navigator.webdriver, "", navigator.webdriver ? "hot" : "ok"),
+            row("Language list empty", !(navigator.languages || []).length, "", !(navigator.languages || []).length ? "warn" : ""),
+            row("Outer size is zero", outerWidth === 0 || outerHeight === 0, "", outerWidth === 0 ? "warn" : ""),
+            row("Plugin count", navigator.plugins ? navigator.plugins.length : 0), row("Cross-origin isolated", typeof crossOriginIsolated !== "undefined" ? crossOriginIsolated : "not reported"),
+            row("SharedArrayBuffer", typeof SharedArrayBuffer !== "undefined" ? "available" : "unavailable"), row("Visibility", document.visibilityState)
+          ]},
+          { id: "timing", title: "Timing", lede: "Navigation timing describes this page load, not the age of the computer.", rows: [
+            row("Navigation type", navTiming ? navTiming.type : "not reported"), row("Redirects", navTiming ? navTiming.redirectCount : "not reported"),
+            row("Duration", navTiming ? `${Math.round(navTiming.duration)} ms` : "not reported"), row("Transfer size", navTiming ? formatBytes(navTiming.transferSize) : "not reported", "Zero often means the document was cached."),
+            row("Time origin", new Date(performance.timeOrigin).toISOString()), row("History length", history.length, "Count only. URLs are not readable.")
+          ]},
+          { id: "signature", title: "Session signature", lede: "A local hash of stable-enough signals. It is not a world-unique identity, and it never leaves this page unless you export it.", rows: [
+            row("Case stem", caseIdFrom(fingerprint)), row("Composite SHA-256", fingerprint, "", "", true), row("Canvas SHA-256", canvas, "", "", true), row("Audio sample", audio, "", "", true),
+            row("Inputs", "user agent, OS, cores, memory bucket, GPU, screen, pixel ratio, timezone, language, canvas, audio")
+          ]}
+        ];
+        return { dossier: { capturedAt: new Date().toISOString(), caseId: caseIdFrom(fingerprint), fingerprint, summary, sections, coverage }, ip: ipResult.place, ipError: ipResult.error, battery };
+      }
+
+      const toFix = (pos) => ({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy, altitude: pos.coords.altitude, altitudeAccuracy: pos.coords.altitudeAccuracy, heading: pos.coords.heading, speed: pos.coords.speed, timestamp: pos.timestamp });
+      const geoErrorMessage = (err) => err && err.code === 1 ? "Permission denied. The browser or operating system blocked a precise fix." : err && err.code === 2 ? "Position unavailable. The receiver could not get a fix." : err && err.code === 3 ? "The receiver timed out." : (err && err.message) || "The precise fix failed.";
+      const requestFix = () => new Promise((resolve, reject) => {
+        if (!navigator.geolocation) { reject(new Error("Geolocation is not available in this browser.")); return; }
+        navigator.geolocation.getCurrentPosition((pos) => resolve(toFix(pos)), reject, { enableHighAccuracy: true, timeout: 16000, maximumAge: 0 });
+      });
+      async function scanMedia() {
+        if (!navigator.mediaDevices) return { devices: [], error: "Media devices API is absent." };
+        let stream = null, error = null;
+        const open = (c) => navigator.mediaDevices.getUserMedia(c);
+        try { stream = await open({ audio: true, video: true }); }
+        catch (e) { try { stream = await open({ audio: true, video: false }); error = "Camera permission was not granted."; } catch (e2) { try { stream = await open({ audio: false, video: true }); error = "Microphone permission was not granted."; } catch (e3) { error = e3 instanceof Error ? e3.message : "Permission was not granted."; } } }
+        const devices = (await navigator.mediaDevices.enumerateDevices()).map((d) => ({ kind: d.kind, label: d.label || "label withheld", deviceId: d.deviceId }));
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+        return { devices, error };
+      }
+      async function scanDisplays() {
+        if (!window.getScreenDetails) return { screens: [], error: "Window Management is absent. The current screen is still in the Display section." };
+        try {
+          const details = await window.getScreenDetails();
+          return { screens: details.screens.map((s) => ({ label: s.label || "Unnamed display", width: s.width, height: s.height, left: s.left, top: s.top, isPrimary: !!s.isPrimary, isInternal: typeof s.isInternal === "boolean" ? s.isInternal : null, dpr: s.devicePixelRatio })), error: null };
+        } catch (err) { return { screens: [], error: err instanceof Error ? err.message : "Display permission was denied." }; }
+      }
+      function sampleMotion() {
+        return new Promise((resolve) => {
+          const start = () => {
+            let orientation = null, motion = null;
+            const onO = (e) => { orientation = e; }, onM = (e) => { motion = e; };
+            window.addEventListener("deviceorientation", onO); window.addEventListener("devicemotion", onM);
+            setTimeout(() => {
+              window.removeEventListener("deviceorientation", onO); window.removeEventListener("devicemotion", onM);
+              if (!orientation && !motion) { resolve({ sample: null, error: "No motion samples arrived. Desktops often have no accelerometer." }); return; }
+              resolve({ error: null, sample: { alpha: orientation && orientation.alpha, beta: orientation && orientation.beta, gamma: orientation && orientation.gamma, ax: motion && motion.acceleration && motion.acceleration.x, ay: motion && motion.acceleration && motion.acceleration.y, az: motion && motion.acceleration && motion.acceleration.z, interval: motion && motion.interval } });
+            }, 2200);
+          };
+          const orientationEvent = window.DeviceOrientationEvent;
+          if (orientationEvent && orientationEvent.requestPermission) {
+            orientationEvent.requestPermission().then((s) => s === "granted" ? start() : resolve({ sample: null, error: "Motion permission denied." })).catch(() => resolve({ sample: null, error: "Motion permission failed." }));
+            return;
+          }
+          start();
+        });
+      }
+      async function scanMidi() {
+        if (!navigator.requestMIDIAccess) return { devices: [], error: "Web MIDI is absent in this browser." };
+        try {
+          const access = await navigator.requestMIDIAccess({ sysex: false, software: true });
+          const devices = [];
+          access.inputs.forEach((i) => devices.push({ kind: "input", name: i.name || "Unnamed input", manufacturer: i.manufacturer || "unknown" }));
+          access.outputs.forEach((o) => devices.push({ kind: "output", name: o.name || "Unnamed output", manufacturer: o.manufacturer || "unknown" }));
+          return { devices, error: devices.length ? null : "Permission granted, but no MIDI ports are visible." };
+        } catch (err) { return { devices: [], error: err instanceof Error ? err.message : "MIDI permission denied." }; }
+      }
+      async function scanLocalFonts() {
+        if (!window.queryLocalFonts) return { fonts: [], error: "Local Font Access is absent. It is Chromium-only and often permission-gated." };
+        try {
+          const fonts = await window.queryLocalFonts();
+          return { fonts: Array.from(new Set(fonts.map((f) => f.fullName || f.family))).sort(), error: null };
+        } catch (err) { return { fonts: [], error: err instanceof Error ? err.message : "Font permission denied." }; }
+      }
+      async function pickPeripheral(kind) {
+        try {
+          if (kind === "usb") {
+            if (!navigator.usb) return "WebUSB is absent in this browser.";
+            const d = await navigator.usb.requestDevice({ filters: [] });
+            return [d.manufacturerName, d.productName || "Unnamed USB device", `vendor ${d.vendorId}`, `product ${d.productId}`, d.serialNumber ? `serial ${d.serialNumber}` : "serial not exposed"].filter(Boolean).join(" · ");
+          }
+          if (kind === "hid") {
+            if (!navigator.hid) return "WebHID is absent in this browser.";
+            const devices = await navigator.hid.requestDevice({ filters: [] });
+            return devices.length ? devices.map((d) => `${d.productName || "Unnamed HID"} · vendor ${d.vendorId} · product ${d.productId}`).join(" | ") : "No HID device selected.";
+          }
+          if (!navigator.serial) return "Web Serial is absent in this browser.";
+          const port = await navigator.serial.requestPort();
+          const info = port.getInfo();
+          return `Serial port · vendor ${info.usbVendorId ?? "—"} · product ${info.usbProductId ?? "—"}`;
+        } catch (err) { return err instanceof Error ? err.message : "Selection cancelled."; }
+      }
+      const readGamepads = () => navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean).map((p) => ({ id: p.id, index: p.index, mapping: p.mapping || "none", buttons: p.buttons.length, axes: p.axes.length })) : [];
+
+      function placeSection() {
+        const ip = state.ip, tz = state.dossier.summary.timezone;
+        if (!ip) return { id: "place-ledger", title: "Network place", lede: "City-level location inferred from the public IP. Often kilometers off, and wrong under a VPN.", rows: [row("Status", "unresolved", state.ipError || "The lookup did not return a place.", "warn")] };
+        const disagree = !!(ip.timezone && tz && ip.timezone !== tz);
+        return { id: "place-ledger", title: "Network place", lede: "Inferred from the public IP. Treat it as a region, not a doorway.", rows: [
+          row("Public address", ip.ip, "", "", true), row("Version", ip.version), row("City", ip.city), row("Region", ip.region),
+          row("Country", [ip.country, ip.countryCode].filter(Boolean).join(" · ")), row("Postal", ip.postal),
+          row("Latitude", ip.lat != null ? ip.lat.toFixed(6) : "not reported"), row("Longitude", ip.lon != null ? ip.lon.toFixed(6) : "not reported"),
+          row("Decimal pair", ip.lat != null ? signedDecimal(ip.lat, ip.lon) : "not reported"), row("DMS", ip.lat != null ? toDMS(ip.lat, ip.lon) : "not reported"),
+          row("UTM", ip.lat != null ? toUTM(ip.lat, ip.lon) : "not reported", "WGS84 UTM with the Norway zone-32 exception. Not a surveyed mark."),
+          row("Plus code", ip.lat != null ? toPlusCode(ip.lat, ip.lon) : "not reported"), row("Geohash", ip.lat != null ? toGeohash(ip.lat, ip.lon) : "not reported"),
+          row("Maidenhead", ip.lat != null ? toMaidenhead(ip.lat, ip.lon) : "not reported"), row("Network timezone", ip.timezone),
+          row(disagree ? "Zone disagreement" : "Zone check", disagree ? `${tz} vs ${ip.timezone}` : ip.timezone ? "clock zone matches network zone" : "not comparable", disagree ? "Consistent with a VPN, proxy, remote desktop, or travel. Not proof." : "", disagree ? "warn" : "ok"),
+          row("ISP", ip.isp), row("Organization", ip.org), row("ASN", ip.asn), row("Lookup source", ip.source), row("Captured", state.ipAt)
+        ]};
+      }
+      function gpsSection(gps) {
+        return { id: "device-fix", title: "Device fix", lede: "Precise coordinates from the Geolocation API. Accuracy is the browser's own circle of confusion.", rows: [
+          row("Decimal", signedDecimal(gps.lat, gps.lon)), row("DMS", toDMS(gps.lat, gps.lon)), row("UTM", toUTM(gps.lat, gps.lon)),
+          row("Plus code", toPlusCode(gps.lat, gps.lon)), row("Geohash", toGeohash(gps.lat, gps.lon)), row("Maidenhead", toMaidenhead(gps.lat, gps.lon)),
+          row("Accuracy", `±${Math.round(gps.accuracy)} m · ${accuracyGrade(gps.accuracy)}`), row("Altitude", formatAltitude(gps.altitude, gps.altitudeAccuracy)),
+          row("Speed", formatSpeed(gps.speed)), row("Heading", formatHeading(gps.heading)), row("Fix time", new Date(gps.timestamp).toISOString())
+        ]};
+      }
+      function allSections() {
+        if (!state.dossier) return [];
+        const extras = [];
+        if (state.gps) extras.push(gpsSection(state.gps));
+        if (state.media) extras.push({ id: "media-devices", title: "Cameras and microphones", lede: "Streams were opened only long enough to reveal labels, then released. Nothing was recorded.", rows: state.media.devices.length ? state.media.devices.map((d, i) => row(`${d.kind} ${i + 1}`, d.label, d.deviceId ? `id ${d.deviceId.slice(0, 8)}` : "", "", true)) : [row("Devices", "none listed", state.media.error, "muted")] });
+        if (state.displays) extras.push({ id: "displays", title: "Displays", lede: "From the Window Management API.", rows: state.displays.screens.length ? state.displays.screens.flatMap((s, i) => [row(`Display ${i + 1}`, s.label, [s.isPrimary ? "primary" : "secondary", s.isInternal == null ? "" : s.isInternal ? "internal" : "external"].filter(Boolean).join(" · ")), row(`Display ${i + 1} geometry`, `${s.width} × ${s.height} at ${s.left}, ${s.top} · ${s.dpr}×`)]) : [row("Displays", "not listed", state.displays.error, "muted")] });
+        if (state.motion) extras.push({ id: "motion", title: "Motion sample", lede: "A short listen, not a continuous tracker.", rows: state.motion.sample ? [row("Alpha / beta / gamma", [state.motion.sample.alpha, state.motion.sample.beta, state.motion.sample.gamma].map((n) => n == null ? "—" : Number(n).toFixed(1)).join(" · ")), row("Acceleration", [state.motion.sample.ax, state.motion.sample.ay, state.motion.sample.az].map((n) => n == null ? "—" : Number(n).toFixed(2)).join(" · ")), row("Interval", state.motion.sample.interval == null ? "not reported" : `${state.motion.sample.interval} ms`)] : [row("Sample", "none", state.motion.error, "muted")] });
+        if (state.midi) extras.push({ id: "midi", title: "MIDI ports", lede: "Musical and controller hardware. SysEx was not requested.", rows: state.midi.devices.length ? state.midi.devices.map((d, i) => row(`${d.kind} ${i + 1}`, d.name, d.manufacturer)) : [row("Ports", "none", state.midi.error, "muted")] });
+        if (state.fonts) extras.push({ id: "local-fonts", title: "Installed fonts", lede: "The operating system font catalog, if Local Font Access allowed it.", rows: [row("Count", state.fonts.fonts.length ? String(state.fonts.fonts.length) : "none", state.fonts.error, state.fonts.fonts.length ? "" : "muted")], chips: state.fonts.fonts, chipsLabel: "Full names" });
+        if (state.picks.length) extras.push({ id: "peripherals", title: "Picked peripherals", lede: "Devices you chose. The port was not opened and no data was sent to the device.", rows: state.picks.map((p, i) => row(`${p.kind} ${i + 1}`, p.detail, "", "", true)) });
+        if (state.pads.length || state.padsChecked) extras.push({ id: "gamepads", title: "Gamepads", lede: "Press a button on the pad if it does not appear.", rows: state.pads.length ? state.pads.map((p) => row(`Pad ${p.index}`, p.id, `${p.mapping} · ${p.buttons} buttons · ${p.axes} axes`, "", true)) : [row("Pads", "none connected", "", "muted")] });
+        const base = state.dossier.sections;
+        return [base[0], placeSection(), ...base.slice(1), ...extras].map((s, i) => ({ ...s, index: String(i + 1).padStart(2, "0") }));
+      }
+      function narrative() {
+        const s = state.dossier.summary, ip = state.ip, gps = state.gps;
+        const place = gps ? `A receiver fix is held at ${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)} (±${Math.round(gps.accuracy)} m, ${accuracyGrade(gps.accuracy)}).` : ip && (ip.city || ip.country) ? `Network place resolves to ${[ip.city, ip.region, ip.country].filter(Boolean).join(", ")} — an ISP-grade estimate, not a rooftop.` : ip ? `A public address was admitted (${ip.ip}) but no coordinates came with it.` : "No place has resolved yet.";
+        return `${s.deviceClass} ${s.browser} on ${s.os}. ${s.cpu}, ${s.memory}. Graphics report ${s.gpu}. Panel ${s.display}${s.hz !== "not measured" ? `, about ${s.hz}` : ""}. Clock zone ${s.timezone}. ${place} ${s.secure ? "The page is in a secure context, so the closed doors below can be opened." : "The page is not in a secure context, so precise location and device pickers will stay shut."}`;
+      }
+      function briefText() {
+        const lines = ["MERIDIAN DEVICE INQUEST", `Case ${state.dossier.caseId}`, `Captured ${state.dossier.capturedAt}`, `Signature ${state.dossier.fingerprint}`, "", narrative(), ""];
+        allSections().forEach((section) => {
+          lines.push(`— ${section.index} ${section.title.toUpperCase()} —`, section.lede);
+          section.rows.forEach((item) => { lines.push(`${item.label}: ${item.value}`); if (item.hint) lines.push(`  ${item.hint}`); });
+          if (section.chips && section.chips.length) lines.push(`${section.chipsLabel || "Items"}: ${section.chips.join(", ")}`);
+          lines.push("");
+        });
+        lines.push(LIMITS, "Local instrument only. This report was assembled in the browser and was not sent to a collector.");
+        return lines.join("\n");
+      }
+      function download(filename, text, type) {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([text], { type }));
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }
+      async function copyText(text) {
+        try { await navigator.clipboard.writeText(text); return true; }
+        catch (e) {
+          const area = document.createElement("textarea");
+          area.value = text; area.style.position = "fixed"; area.style.left = "-9999px";
+          document.body.appendChild(area); area.select();
+          const ok = document.execCommand("copy"); area.remove(); return ok;
+        }
+      }
+
+      function rowsHtml(rows) {
+        return rows.map((item) => `<div class="row"><dt>${esc(item.label)}</dt><dd class="${esc(item.tone)} ${item.breakAll ? "break" : ""}">${esc(item.value)}${item.hint ? `<span class="hint">${esc(item.hint)}</span>` : ""}</dd></div>`).join("");
+      }
+      function sectionHtml(section) {
+        const q = state.query.trim().toLowerCase();
+        const blob = [section.title, section.lede, ...section.rows.flatMap((r) => [r.label, r.value, r.hint || ""]), ...(section.chips || [])].join(" ").toLowerCase();
+        if (q && !blob.includes(q)) return "";
+        const chips = section.chips && section.chips.length ? `<div class="chips">${section.chips.map((c) => `<span>${esc(c)}</span>`).join("")}</div>` : "";
+        return `<article class="card" id="${esc(section.id)}"><header><p class="kicker">${esc(section.index)}</p><h3>${esc(section.title)}</h3><p class="muted">${esc(section.lede)}</p></header>${rowsHtml(section.rows)}${chips}</article>`;
+      }
+      function chassisSvg() {
+        const s = state.dossier ? state.dossier.summary : null;
+        const cores = s ? s.cores : 0, memory = s ? s.memoryGb : null, gpu = s ? s.gpu : "reading adapter";
+        const lit = memory == null ? 0 : memory <= 2 ? 1 : memory <= 4 ? 2 : memory <= 8 ? 3 : 4;
+        const sticks = [0, 1, 2, 3].map((i) => `<rect x="${236 + i * 16}" y="78" width="10" height="78" fill="${i < lit ? "#e4a15a" : "none"}" stroke="currentColor" opacity=".7"/>`).join("");
+        return `<div class="schematic"><p class="kicker">Sheet 01 · host schematic</p><svg viewBox="0 0 640 360" width="100%" aria-hidden="true"><rect x="18" y="18" width="300" height="300" fill="none" stroke="currentColor" opacity=".65"/><g transform="translate(150 150)"><circle r="34" fill="none" stroke="#e4a15a"/><circle r="5" fill="#e4a15a"/></g><text x="118" y="196" fill="currentColor" font-size="10" font-family="IBM Plex Mono, monospace">${cores || "—"} THREADS</text>${sticks}<rect x="48" y="236" width="200" height="42" fill="none" stroke="#8ed9d0"/><text x="58" y="262" fill="#8ed9d0" font-size="11" font-family="IBM Plex Mono, monospace">${esc(gpu).slice(0, 28)}</text><text x="360" y="70" fill="#e4a15a" font-size="12" font-family="IBM Plex Mono, monospace">01 COMPUTE</text><text x="360" y="92" fill="currentColor" font-size="13" font-family="IBM Plex Mono, monospace">${cores ? cores + " logical" : "withheld"}</text><text x="360" y="132" fill="#e4a15a" font-size="12" font-family="IBM Plex Mono, monospace">02 MEMORY</text><text x="360" y="154" fill="currentColor" font-size="13" font-family="IBM Plex Mono, monospace">${memory != null ? memory + " GB bucket" : "not reported"}</text><text x="360" y="194" fill="#e4a15a" font-size="12" font-family="IBM Plex Mono, monospace">03 LINK</text><text x="360" y="216" fill="currentColor" font-size="13" font-family="IBM Plex Mono, monospace">${state.online ? "online" : "offline"}</text><text x="360" y="256" fill="#e4a15a" font-size="12" font-family="IBM Plex Mono, monospace">04 POWER</text><text x="360" y="278" fill="currentColor" font-size="13" font-family="IBM Plex Mono, monospace">${state.battery ? (state.battery.charging ? "charging" : "on battery") : "mains / unknown"}</text></svg><p class="faint mono" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase">Schematic only — a page cannot photograph this chassis</p></div>`;
+      }
+      function locationHtml() {
+        const ip = state.ip, gps = state.gps;
+        const canDevice = !!gps, canNetwork = !!(ip && ip.lat != null && ip.lon != null);
+        const useDevice = state.picked === "network" ? false : canDevice;
+        const primary = useDevice && gps ? { lat: gps.lat, lon: gps.lon, source: "gps", accuracy: gps.accuracy } : canNetwork ? { lat: ip.lat, lon: ip.lon, source: "ip" } : null;
+        const points = [];
+        if (canNetwork) points.push({ id: "NET", lat: ip.lat, lon: ip.lon });
+        if (gps) points.push({ id: "DEV", lat: gps.lat, lon: gps.lon });
+        let plotted = points.map((p) => ({ ...p, x: 320, y: 150 }));
+        if (points.length === 2) {
+          const minLat = Math.min(points[0].lat, points[1].lat), maxLat = Math.max(points[0].lat, points[1].lat);
+          const minLon = Math.min(points[0].lon, points[1].lon), maxLon = Math.max(points[0].lon, points[1].lon);
+          const latSpan = Math.max(0.002, maxLat - minLat), lonSpan = Math.max(0.002, maxLon - minLon);
+          plotted = points.map((p) => ({ ...p, x: 70 + ((p.lon - minLon) / lonSpan) * 500, y: 36 + ((maxLat - p.lat) / latSpan) * 230 }));
+        }
+        const line = plotted.length === 2 ? `<line x1="${plotted[0].x}" y1="${plotted[0].y}" x2="${plotted[1].x}" y2="${plotted[1].y}" stroke="#e4a15a" stroke-dasharray="4 5"/>` : "";
+        const dots = plotted.map((p) => `<g><circle cx="${p.x}" cy="${p.y}" r="5" fill="${p.id === "DEV" ? "#8ed9d0" : "#e4a15a"}"/><text x="${p.x + 10}" y="${p.y + 4}" fill="#f4ecdf" font-size="11" font-family="IBM Plex Mono, monospace">${p.id}</text></g>`).join("");
+        const delta = gps && canNetwork ? { km: haversineKm(ip.lat, ip.lon, gps.lat, gps.lon), bearing: bearingDeg(ip.lat, ip.lon, gps.lat, gps.lon) } : null;
+        const systems = primary ? [["GIS decimal", signedDecimal(primary.lat, primary.lon)], ["DMS", toDMS(primary.lat, primary.lon)], ["UTM", toUTM(primary.lat, primary.lon)], ["Plus code", toPlusCode(primary.lat, primary.lon)], ["Geohash", toGeohash(primary.lat, primary.lon)], ["Maidenhead", toMaidenhead(primary.lat, primary.lon)]] : [];
+        const pretty = primary ? { lat: Math.abs(primary.lat).toFixed(5), lon: Math.abs(primary.lon).toFixed(5), ns: primary.lat >= 0 ? "N" : "S", ew: primary.lon >= 0 ? "E" : "W" } : null;
+        const pad = primary ? mapPad(primary.source, primary.accuracy) : 0.1;
+        const zoom = primary && primary.source === "gps" ? 16 : 11;
+        const disagree = ip && ip.timezone && state.dossier.summary.timezone && ip.timezone !== state.dossier.summary.timezone;
+        return `<section class="section" id="place"><p class="kicker">Place</p><h2>Coordinates, both opinions.</h2><p class="lede">Network place is the ISP’s neighborhood. A device fix is the receiver, and it stays closed until you ask.</p><div class="place-grid" style="margin-top:18px"><div class="map-stack"><div class="graticule"><svg viewBox="0 0 640 320" width="100%" height="320">${line}${dots}${plotted.length ? "" : `<text x="320" y="160" text-anchor="middle" fill="#f4ecdf" opacity=".45" font-family="IBM Plex Mono, monospace">NO FIX</text>`}</svg><div class="cap"><span>Relative plot · not to world scale</span><span>${delta ? formatDistance(delta.km) : primary ? "single opinion" : "waiting"}</span></div></div><div class="atlas">${primary ? `<iframe title="OpenStreetMap of the primary fix" src="${osmEmbed(primary.lat, primary.lon, pad)}"></iframe>` : `<div style="height:280px;display:grid;place-items:center;color:var(--muted)">Atlas tiles appear once a coordinate exists.</div>`}<div class="cap"><span>Map data © OpenStreetMap contributors</span></div></div></div><div class="coord-card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><div><span class="kicker">${primary && primary.source === "gps" ? "Device fix" : primary ? "Network estimate" : "No fix"}</span>${canDevice && canNetwork ? `<span class="toggle"><button type="button" data-act="src" data-src="device" class="${useDevice ? "on" : ""}">Device</button><button type="button" data-act="src" data-src="network" class="${useDevice ? "" : "on"}">Network</button></span>` : ""}</div>${primary ? `<button class="ghost" type="button" data-act="copy" data-text="${esc(signedDecimal(primary.lat, primary.lon))}">Copy pair</button>` : ""}</div>${pretty ? `<p class="big">${pretty.lat}<i>° ${pretty.ns}</i></p><p class="big">${pretty.lon}<i>° ${pretty.ew}</i></p>` : `<p class="big" style="color:var(--faint)">— —</p>`}<p class="muted" style="font-size:14px;line-height:1.5">${gps && useDevice ? `Receiver accuracy ±${Math.round(gps.accuracy)} m, ${accuracyGrade(gps.accuracy)}. Altitude ${esc(formatAltitude(gps.altitude, gps.altitudeAccuracy))}. Speed ${esc(formatSpeed(gps.speed))}. Heading ${esc(formatHeading(gps.heading))}.` : primary ? "These figures follow the public address. Useful for a region. Often wrong under a VPN, and rarely a rooftop." : "Neither opinion has landed yet."}</p><div>${systems.map(([label, value]) => `<div class="sys"><div><span class="kicker">${esc(label)}</span><b>${esc(value)}</b></div><button class="ghost" type="button" data-act="copy" data-text="${esc(value)}">Copy</button></div>`).join("")}</div>${delta ? `<p class="note">The device fix lies ${formatDistance(delta.km)} ${cardinal(delta.bearing)} of the network estimate, bearing ${Math.round(delta.bearing)}°.</p>` : ""}${disagree ? `<p class="note warn">Clock zone ${esc(state.dossier.summary.timezone)} does not match network zone ${esc(ip.timezone)}. That split fits a VPN, a proxy, a remote desktop, or travel. It is not proof.</p>` : ""}<p class="muted" style="font-size:14px">${esc([ip && ip.city, ip && ip.region, ip && ip.country].filter(Boolean).join(", ") || "Network place unresolved")}${ip && ip.ip ? ` · ${esc(ip.ip)}` : ""}<br>${esc([ip && ip.isp, ip && ip.asn].filter(Boolean).join(" · ") || state.ipError || "No ISP record")}</p>${state.gpsMessage ? `<p class="err">${esc(state.gpsMessage)}</p>` : ""}<div class="btnrow"><button class="solid" type="button" data-act="fix" ${state.gpsState === "pending" ? "disabled" : ""}>${state.gpsState === "pending" ? "Listening…" : gps ? "Refresh device fix" : "Fix precise position"}</button><button class="ghost" type="button" data-act="watch">${state.watching ? "Stop watch" : "Watch live"}</button><button class="ghost" type="button" data-act="ip" ${state.ipState === "pending" ? "disabled" : ""}>${state.ipState === "pending" ? "Tracing…" : "Refresh network place"}</button></div>${primary ? `<div class="links"><a href="https://www.openstreetmap.org/?mlat=${primary.lat}&mlon=${primary.lon}#map=${zoom}/${primary.lat}/${primary.lon}" target="_blank" rel="noreferrer">OpenStreetMap</a><a href="https://www.google.com/maps?q=${primary.lat},${primary.lon}" target="_blank" rel="noreferrer">Google Maps</a><a href="geo:${primary.lat},${primary.lon}">Geo URI</a></div>` : ""}</div></div></section>`;
+      }
+      function door(title, body, act, label, result) {
+        return `<div class="door"><h3>${title}</h3><p>${body}</p>${result ? `<p class="err">${esc(result)}</p>` : ""}<button class="ghost" type="button" data-act="${act}" ${state.busy === act ? "disabled" : ""}>${state.busy === act ? "Waiting…" : label}</button></div>`;
+      }
+      function page() {
+        const clock = new Date();
+        const time = clock.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        const date = clock.toLocaleDateString([], { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+        const mark = `<svg viewBox="0 0 32 32" width="36" height="36" aria-hidden="true"><rect x="1" y="1" width="30" height="30" fill="none" stroke="currentColor"/><circle cx="16" cy="16" r="5" fill="none" stroke="currentColor"/><path d="M16 4v5M16 23v5M4 16h5M23 16h5" stroke="currentColor"/></svg>`;
+        const stepIndex = Math.max(0, STEPS.indexOf(state.step));
+        let heroLeft = "";
+        if (state.booting) heroLeft = `<p class="kicker">Listening</p><h1>Opening<br>the case.</h1><ol class="steps">${STEPS.map((label, i) => `<li class="${i === stepIndex ? "on" : i < stepIndex ? "done" : ""}"><span>${String(i + 1).padStart(2, "0")}</span><span>${label}</span></li>`).join("")}</ol>`;
+        else if (state.bootError && !state.dossier) heroLeft = `<p class="kicker">Interrupted</p><h1>The case<br>did not open.</h1><p class="lede">${esc(state.bootError)}</p><div class="actions"><button class="solid" type="button" data-act="rescan">Try again</button></div>`;
+        else heroLeft = `<p class="kicker">Field note · ${esc(state.dossier.caseId)}</p><h1>What this<br>machine <em>admits.</em></h1><p class="lede">A local inquest of the computer this page is open on. Hardware, display, graphics, power, network place, and coordinates — only what the browser will volunteer.</p><div class="stamp">Local only<span style="display:block;margin-top:4px">${esc(state.dossier.caseId)}</span></div><div class="actions"><a class="solid" href="#place">Open coordinates</a><button class="ghost" type="button" data-act="rescan" ${state.rescanning ? "disabled" : ""}>${state.rescanning ? "Rescanning…" : "Rescan"}</button><button class="ghost" type="button" data-act="brief">${state.copied ? "Brief copied" : "Export brief"}</button></div>`;
+        const s = state.dossier && state.dossier.summary;
+        const metrics = s ? [["Class", s.deviceClass.replace("-class", ""), s.browser], ["System", s.os.split("·")[0].trim(), s.timezone], ["Compute", s.cores ? `${s.cores} threads` : "Withheld", s.memory], ["Adapter", s.gpu, s.hz], ["Panel", `${screen.width}×${screen.height}`, `${s.dpr}× pixel ratio`], ["Power", state.battery ? pct(state.battery.level) : "Unknown", state.battery ? (state.battery.charging ? "Charging" : "On battery") : state.online ? "Link up" : "Link down"]].map(([k, v, h]) => `<div class="metric"><div class="kicker">${esc(k)}</div><b>${esc(v)}</b><span>${esc(h)}</span></div>`).join("") : "";
+        const admitted = s ? state.dossier.coverage.filter((c) => c.state === "admitted").length : 0;
+        const pills = s ? `<span class="pill ok">${admitted}/${state.dossier.coverage.length} surfaces admitted</span>` + state.dossier.coverage.map((c) => `<span class="pill ${c.state === "admitted" ? "ok" : c.state === "partial" ? "partial" : ""}">${esc(c.name)}</span>`).join("") : "";
+        const sections = state.dossier ? allSections() : [];
+        const q = state.query.trim().toLowerCase();
+        const visible = sections.filter((section) => !q || [section.title, section.lede, ...section.rows.flatMap((r) => [r.label, r.value, r.hint || ""]), ...(section.chips || [])].join(" ").toLowerCase().includes(q));
+        const wm = state.gps ? Math.abs(state.gps.lat).toFixed(0) : state.ip && state.ip.lat != null ? Math.abs(state.ip.lat).toFixed(0) : "00";
+        return `<div class="watermark" aria-hidden="true">${wm}°</div><div class="tape no-print"><div class="tape-track"><span>${TAPE.repeat(2)}</span><span>${TAPE.repeat(2)}</span></div></div><header class="bar"><div class="wrap bar-row"><div class="brand">${mark}<div><strong>Meridian</strong><span class="kicker">Device inquest</span></div></div><div class="mono" style="text-align:center"><div class="faint" style="font-size:10px;letter-spacing:.2em">CASE</div><div>${s ? esc(state.dossier.caseId) : "MR-····-····"}</div></div><div style="display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="mono" id="clock">${time}</div><div class="faint mono" id="clock-date" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase">${date}</div></div><button class="ghost no-print" type="button" data-act="print">Print</button><button class="ghost no-print" type="button" data-act="json" ${s ? "" : "disabled"}>JSON</button></div></div></header><main class="wrap"><section class="hero"><div>${heroLeft}</div><div class="plate">${state.booting || state.rescanning ? `<div class="scanline"></div>` : ""}<div class="plate-inner">${chassisSvg()}</div></div></section>${s ? `<div class="metrics">${metrics}</div><p class="story">${esc(narrative())}</p><div class="pills">${pills}</div>${locationHtml()}<section class="section" id="doors"><p class="kicker">Closed doors</p><h2>Ask this PC for more.</h2><p class="lede">These open the browser’s own permission dialogs. Streams are stopped immediately. Ports are not opened. Nothing is uploaded.</p><div class="doors" style="margin-top:16px">${door("Cameras and mics", "Opens the devices only long enough to read their names, then releases every track. Nothing is recorded.", "media", "Name devices", state.media && state.media.error)}${door("Displays", "Window Management can list every monitor. Chromium only.", "displays", "Enumerate displays", state.displays && state.displays.error)}${door("Motion", "A two-second listen for accelerometer and orientation. Most desktops have nothing to say.", "motion", "Sample sensors", state.motion && state.motion.error)}${door("MIDI", "Controllers and musical ports. System exclusive is not requested.", "midi", "List MIDI", state.midi && state.midi.error)}${door("Installed fonts", "The operating system font catalog, if Local Font Access is allowed.", "fonts", "List local fonts", state.fonts && state.fonts.error)}${door("USB device", "Opens the browser chooser. The selected name is recorded here. The device is not claimed.", "usb", "Pick USB", state.picks.length ? state.picks[state.picks.length - 1].detail : "")}</div><div class="btnrow"><button class="ghost" type="button" data-act="hid">Pick HID</button><button class="ghost" type="button" data-act="serial">Pick serial</button><button class="ghost" type="button" data-act="pads">Refresh gamepads</button></div></section><section class="section" id="ledger"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:end"><div><p class="kicker">Ledger</p><h2>Every admitted field.</h2></div><label class="filter"><span class="kicker">Filter · press /</span><input id="dossier-filter" type="search" value="${esc(state.query)}" placeholder="GPU, timezone, permission…"></label></div><p class="faint mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase">${q ? `${visible.length} sections match` : `${sections.length} sections · ${sections.reduce((n, sec) => n + sec.rows.length, 0)} fields`}</p><div class="toc-row no-print">${visible.map((sec) => `<a href="#${esc(sec.id)}">${esc(sec.index)} ${esc(sec.title)}</a>`).join("")}</div><div class="ledger-grid"><aside class="toc no-print">${visible.map((sec) => `<a href="#${esc(sec.id)}">${esc(sec.index)} ${esc(sec.title)}</a>`).join("")}</aside><div style="display:grid;gap:14px">${visible.map(sectionHtml).join("") || `<p class="card" style="padding:24px">No field contains “${esc(state.query)}”.</p>`}</div></div></section>` : ""}</main><footer class="site"><div class="wrap"><div><p class="serif" style="font-size:1.7rem;margin:0">The limit of a webpage.</p><p class="muted">${esc(LIMITS)}</p></div><p class="muted">Local instrument only. It reads this browser, on this computer, and keeps the dossier on this page.</p><p class="faint mono" style="letter-spacing:.16em;text-transform:uppercase;font-size:11px">Meridian · device inquest · single file</p></div></footer>`;
+      }
+
+      function render() {
+        const y = window.scrollY;
+        const filter = document.getElementById("dossier-filter");
+        const focused = document.activeElement === filter;
+        const caret = filter ? filter.selectionStart : null;
+        document.getElementById("root").innerHTML = page();
+        window.scrollTo(0, y);
+        if (focused) {
+          const next = document.getElementById("dossier-filter");
+          if (next) { next.focus(); if (caret != null) next.setSelectionRange(caret, caret); }
+        }
+      }
+      async function boot() {
+        state.booting = !state.dossier;
+        state.rescanning = !!state.dossier;
+        render();
+        try {
+          const result = await investigate((label) => { state.step = label; if (state.booting) render(); });
+          state.dossier = result.dossier;
+          state.ip = result.ip;
+          state.ipError = result.ipError;
+          state.ipAt = new Date().toISOString();
+          state.ipState = result.ip ? "ready" : "failed";
+          if (result.battery) state.battery = result.battery;
+          state.bootError = null;
+          document.title = `Meridian · ${result.dossier.caseId}`;
+        } catch (err) {
+          state.bootError = err instanceof Error ? err.message : "The inquest failed.";
+        } finally {
+          state.booting = false;
+          state.rescanning = false;
+          render();
+        }
+      }
+      async function runDoor(key, task) {
+        state.busy = key; render();
+        try { await task(); } finally { state.busy = null; render(); }
+      }
+      document.addEventListener("click", async (event) => {
+        const btn = event.target.closest("[data-act]");
+        if (!btn) return;
+        const act = btn.dataset.act;
+        if (act === "print") window.print();
+        if (act === "json" && state.dossier) download(`meridian-${state.dossier.caseId}.json`, JSON.stringify({ caseId: state.dossier.caseId, capturedAt: state.dossier.capturedAt, fingerprint: state.dossier.fingerprint, summary: state.dossier.summary, networkPlace: state.ip, deviceFix: state.gps, coverage: state.dossier.coverage, sections: allSections(), limits: LIMITS }, null, 2), "application/json");
+        if (act === "brief" && state.dossier) {
+          const text = briefText();
+          state.copied = await copyText(text);
+          download(`meridian-${state.dossier.caseId}.txt`, text, "text/plain");
+          render();
+          setTimeout(() => { state.copied = false; render(); }, 1600);
+        }
+        if (act === "rescan") boot();
+        if (act === "copy") copyText(btn.dataset.text || "");
+        if (act === "src") { state.picked = btn.dataset.src; render(); }
+        if (act === "fix") {
+          state.gpsState = "pending"; state.gpsMessage = null; render();
+          try { state.gps = await requestFix(); state.gpsState = "fixed"; }
+          catch (err) { state.gpsState = err && err.code === 1 ? "denied" : err && err.code === 3 ? "timeout" : "error"; state.gpsMessage = geoErrorMessage(err); }
+          render();
+        }
+        if (act === "watch") {
+          if (state.watching && state.watchId != null) { navigator.geolocation.clearWatch(state.watchId); state.watchId = null; state.watching = false; render(); return; }
+          if (!navigator.geolocation) { state.gpsMessage = "Geolocation is not available in this browser."; render(); return; }
+          state.watching = true; state.gpsState = "pending"; state.gpsMessage = null;
+          state.watchId = navigator.geolocation.watchPosition((pos) => { state.gps = toFix(pos); state.gpsState = "fixed"; state.gpsMessage = null; render(); }, (err) => { state.gpsState = err.code === 1 ? "denied" : "error"; state.gpsMessage = geoErrorMessage(err); render(); }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 });
+          render();
+        }
+        if (act === "ip") {
+          state.ipState = "pending"; render();
+          const result = await lookupIp();
+          state.ip = result.place; state.ipError = result.error; state.ipAt = new Date().toISOString(); state.ipState = result.place ? "ready" : "failed"; render();
+        }
+        if (act === "media") runDoor("media", async () => { state.media = await scanMedia(); });
+        if (act === "displays") runDoor("displays", async () => { state.displays = await scanDisplays(); });
+        if (act === "motion") runDoor("motion", async () => { state.motion = await sampleMotion(); });
+        if (act === "midi") runDoor("midi", async () => { state.midi = await scanMidi(); });
+        if (act === "fonts") runDoor("fonts", async () => { state.fonts = await scanLocalFonts(); });
+        if (act === "usb" || act === "hid" || act === "serial") runDoor(act, async () => { const detail = await pickPeripheral(act); state.picks.push({ kind: act.toUpperCase(), detail }); });
+        if (act === "pads") { state.pads = readGamepads(); state.padsChecked = true; render(); }
+      });
+      document.addEventListener("input", (event) => {
+        if (event.target.id !== "dossier-filter") return;
+        state.query = event.target.value;
+        render();
+      });
+      document.addEventListener("keydown", (event) => {
+        const tag = event.target && event.target.tagName;
+        if (event.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") { event.preventDefault(); const input = document.getElementById("dossier-filter"); if (input) input.focus(); }
+      });
+      window.addEventListener("online", () => { state.online = true; render(); });
+      window.addEventListener("offline", () => { state.online = false; render(); });
+      window.addEventListener("gamepadconnected", () => { state.pads = readGamepads(); render(); });
+      window.addEventListener("gamepaddisconnected", () => { state.pads = readGamepads(); render(); });
+      setInterval(() => {
+        const el = document.getElementById("clock");
+        const date = document.getElementById("clock-date");
+        if (!el) return;
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        if (date) date.textContent = now.toLocaleDateString([], { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+      }, 1000);
+      if (navigator.getBattery) navigator.getBattery().then((b) => { const emit = () => { state.battery = { level: b.level, charging: b.charging, chargingTime: b.chargingTime, dischargingTime: b.dischargingTime }; if (state.dossier) render(); }; ["levelchange","chargingchange","chargingtimechange","dischargingtimechange"].forEach((ev) => b.addEventListener(ev, emit)); }).catch(() => {});
+      render();
+      boot();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

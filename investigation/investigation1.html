@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ForensiScan — Device Intelligence & Investigation Console</title>
+<meta name="description" content="Comprehensive browser-based device intelligence, hardware fingerprinting, and geolocation analysis console." />
+<style>
+  :root{
+    --bg:#020617;--panel:rgba(15,23,42,.4);--panel2:rgba(30,41,59,.4);
+    --border:rgba(51,65,85,.6);--cyan:#67e8f9;--cyan2:#22d3ee;
+    --slate:#94a3b8;--slate2:#cbd5e1;--rose:#fda4af;--amber:#fcd34d;
+    --emerald:#6ee7b7;--fuchsia:#f0abfc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:#e2e8f0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  a{color:inherit}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#1e293b;border-radius:6px}
+  ::-webkit-scrollbar-track{background:#0b1120}
+
+  /* boot */
+  #boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);z-index:50}
+  #boot .wrap{width:100%;max-width:28rem;padding:0 1.5rem}
+  #boot .logo{font-size:3rem;text-align:center}
+  #boot h1{font-family:ui-monospace,monospace;font-size:1.5rem;font-weight:900;text-align:center;color:var(--cyan);margin-top:.75rem;letter-spacing:-.02em}
+  #boot h1 span{color:#f1f5f9}
+  #boot .sub{font-family:ui-monospace,monospace;font-size:.7rem;text-align:center;color:#64748b;margin-top:.25rem;letter-spacing:.1em}
+  #bootlines{font-family:ui-monospace,monospace;font-size:.75rem;margin-top:1.5rem}
+  #bootlines div{color:#475569;padding:.1rem 0;transition:color .3s}
+  #bootlines div.done{color:#34d399}
+  .bar{margin-top:1.5rem;height:.5rem;border-radius:9999px;background:#1e293b;overflow:hidden}
+  .bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#06b6d4,#d946ef);transition:width .3s}
+  #bootpct{margin-top:.5rem;text-align:right;font-family:ui-monospace,monospace;font-size:.75rem;color:#64748b}
+
+  /* grid bg */
+  .gridbg{pointer-events:none;position:fixed;inset:0;opacity:.15;
+    background-image:linear-gradient(rgba(34,211,238,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.4) 1px,transparent 1px);
+    background-size:40px 40px;-webkit-mask-image:radial-gradient(ellipse at top,#000,transparent 75%);mask-image:radial-gradient(ellipse at top,#000,transparent 75%)}
+
+  .container{position:relative;max-width:80rem;margin:0 auto;padding:1.5rem 1rem}
+  @media(min-width:640px){.container{padding:1.5rem}}
+
+  header.hd{display:flex;flex-direction:column;gap:1rem;border-bottom:1px solid rgba(34,211,238,.2);padding-bottom:1.5rem;margin-bottom:2rem}
+  @media(min-width:640px){header.hd{flex-direction:row;align-items:flex-end;justify-content:space-between}}
+  .title-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+  .title-row .big{font-size:1.75rem}
+  .title-row h1{font-family:ui-monospace,monospace;font-size:1.6rem;font-weight:900;color:var(--cyan);letter-spacing:-.02em}
+  .title-row h1 span{color:#f1f5f9}
+  .tag{border:1px solid rgba(244,63,94,.4);background:rgba(244,63,94,.1);color:var(--rose);border-radius:.25rem;padding:.15rem .5rem;font-family:ui-monospace,monospace;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em}
+  .meta{margin-top:.5rem;font-family:ui-monospace,monospace;font-size:.72rem;color:var(--slate);max-width:40rem}
+  .btn{border-radius:.5rem;border:1px solid rgba(34,211,238,.4);background:rgba(34,211,238,.1);color:var(--cyan);padding:.5rem 1rem;font-family:ui-monospace,monospace;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;cursor:pointer;transition:background .2s}
+  .btn:hover{background:rgba(34,211,238,.2)}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  .notice{margin-bottom:1.5rem;border-radius:.5rem;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.05);padding:.75rem 1rem;font-family:ui-monospace,monospace;font-size:.72rem;color:rgba(252,211,77,.9)}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:2rem}
+  @media(min-width:640px){.stats{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1024px){.stats{grid-template-columns:repeat(6,1fr)}}
+  .chip{border-radius:.5rem;border:1px solid rgba(6,182,212,.2);background:rgba(15,23,42,.5);padding:.75rem 1rem}
+  .chip .l{font-family:ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(6,182,212,.7)}
+  .chip .v{margin-top:.25rem;font-family:ui-monospace,monospace;font-size:1.05rem;font-weight:600;color:#cffafe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .grid2{display:grid;gap:1.5rem;margin-bottom:1.5rem}
+  @media(min-width:1024px){.grid2{grid-template-columns:repeat(2,1fr)}}
+  .maingrid{margin-top:1.5rem;display:grid;gap:1.5rem}
+  @media(min-width:768px){.maingrid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1280px){.maingrid{grid-template-columns:repeat(3,1fr)}}
+
+  section.panel{position:relative;overflow:hidden;border-radius:.75rem;border:1px solid var(--border);background:var(--panel);backdrop-filter:blur(4px);transition:border-color .2s}
+  section.panel:hover{border-color:rgba(34,211,238,.5)}
+  .panel .phead{display:flex;align-items:center;gap:.75rem;border-bottom:1px solid var(--border);background:var(--panel2);padding:.75rem 1.25rem}
+  .panel .phead .ic{font-size:1.25rem}
+  .panel .phead h2{font-family:ui-monospace,monospace;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#a5f3fc}
+  .panel .phead .live{margin-left:auto;display:flex;align-items:center;gap:.5rem;font-family:ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;color:#34d399}
+  .dot{height:.375rem;width:.375rem;border-radius:9999px;background:#34d399;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .panel .pbody{padding:1.25rem}
+  dl.rows>div{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;border-bottom:1px solid rgba(30,41,59,.6);padding:.375rem 0}
+  dl.rows>div:last-child{border-bottom:0}
+  dl.rows dt{flex-shrink:0;font-family:ui-monospace,monospace;font-size:.72rem;color:var(--slate)}
+  dl.rows dd{text-align:right;font-family:ui-monospace,monospace;font-size:.72rem;word-break:break-all}
+  .r-info{color:rgba(110,231,183,.9)}.r-warn{color:var(--amber)}.r-high{color:var(--rose)}
+  .r-cyan{color:#a5f3fc}.r-amber{color:var(--amber)}.r-slate{color:var(--slate2)}.r-em{color:#a5f3fc}
+
+  .muted{font-family:ui-monospace,monospace;font-size:.72rem;color:var(--slate)}
+  .err{font-family:ui-monospace,monospace;font-size:.72rem;color:#fb7185}
+  .ok{font-family:ui-monospace,monospace;font-size:.72rem;color:#34d399}
+
+  .coordgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .coord{border-radius:.375rem;border:1px solid rgba(244,63,94,.2);background:rgba(244,63,94,.05);padding:.5rem .75rem}
+  .coord .l{font-family:ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(251,113,133,.8)}
+  .coord .v{font-family:ui-monospace,monospace;font-size:.9rem;font-weight:700;color:#ffe4e6}
+  iframe.map{height:14rem;width:100%;border:0;border-radius:.5rem;border:1px solid #334155;margin-top:.75rem;display:block}
+  .linkrow{display:flex;gap:.5rem;margin-top:.75rem}
+  .linkrow a{flex:1;border-radius:.375rem;border:1px solid rgba(34,211,238,.4);background:rgba(34,211,238,.1);padding:.5rem .75rem;text-align:center;font-family:ui-monospace,monospace;font-size:.68rem;text-transform:uppercase;color:#a5f3fc;text-decoration:none}
+  .linkrow a:hover{background:rgba(34,211,238,.2)}
+
+  .fpgrid{display:grid;gap:.75rem}
+  @media(min-width:640px){.fpgrid{grid-template-columns:repeat(3,1fr)}}
+  .fpbox{border-radius:.5rem;border:1px solid #334155;background:rgba(2,6,23,.6);padding:.75rem 1rem}
+  .fpbox .l{font-family:ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;color:#64748b}
+  .fpbox .v{margin-top:.25rem;word-break:break-all;font-family:ui-monospace,monospace;font-size:.85rem}
+  .tf{color:var(--fuchsia)}.tc{color:#67e8f9}.te{color:#6ee7b7}
+
+  .tags{display:flex;flex-wrap:wrap;gap:.375rem}
+  .pill{border-radius:.25rem;background:rgba(30,41,59,.6);padding:.25rem .5rem;font-family:ui-monospace,monospace;font-size:.68rem;color:#a5f3fc;box-shadow:inset 0 0 0 1px #334155}
+  .pill.rose{background:rgba(244,63,94,.1);color:var(--rose);box-shadow:inset 0 0 0 1px rgba(244,63,94,.3)}
+
+  .capgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+  @media(min-width:640px){.capgrid{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1024px){.capgrid{grid-template-columns:repeat(4,1fr)}}
+  .cap{display:flex;align-items:center;justify-content:space-between;border-radius:.375rem;border:1px solid #1e293b;background:rgba(15,23,42,.4);padding:.375rem .75rem}
+  .cap span.n{font-family:ui-monospace,monospace;font-size:.68rem;color:var(--slate2)}
+  .cap span.d{height:.5rem;width:.5rem;border-radius:9999px;background:#475569}
+  .cap span.d.on{background:#34d399}
+
+  .subhead{font-family:ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;color:#64748b}
+  .divtop{border-top:1px solid var(--border);padding-top:.75rem;margin-top:1rem}
+
+  footer{margin-top:2.5rem;border-top:1px solid #1e293b;padding-top:1.5rem;text-align:center;font-family:ui-monospace,monospace;font-size:.68rem;color:#475569}
+  .mb6{margin-bottom:1.5rem}.mt6{margin-top:1.5rem}.stack>*+*{margin-top:1rem}
+</style>
+</head>
+<body>
+  <!-- BOOT -->
+  <div id="boot">
+    <div class="wrap">
+      <div style="text-align:center">
+        <div class="logo">🔍</div>
+        <h1>Forensi<span>Scan</span></h1>
+        <div class="sub">DEVICE INTELLIGENCE CONSOLE</div>
+      </div>
+      <div id="bootlines"></div>
+      <div class="bar"><span id="bootbar"></span></div>
+      <div id="bootpct">0%</div>
+    </div>
+  </div>
+
+  <div class="gridbg"></div>
+  <div class="container" id="app" style="display:none"></div>
+
+<script>
+"use strict";
+/* ===================================================================
+   ForensiScan — single-file device intelligence console
+   All data gathered client-side via standard Web APIs.
+   =================================================================== */
+const $ = (s, r=document) => r.querySelector(s);
+const el = (t, cls, html) => { const e=document.createElement(t); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; };
+const esc = (s) => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const yesNo = (b) => b===undefined?"Unknown":b?"Yes":"No";
+const nn = (v,suf="") => (v===undefined||v===null||v==="")?"Unavailable":(v+suf);
+const startT = performance.now();
+const scanTime = new Date();
+
+/* ---------- UA parsing ---------- */
+function parseUA(ua){
+  let os="Unknown OS",osVer="";
+  if(/Windows NT 10/.test(ua)){os="Windows";osVer="10 / 11";}
+  else if(/Windows NT 6.3/.test(ua)){os="Windows";osVer="8.1";}
+  else if(/Windows NT 6.2/.test(ua)){os="Windows";osVer="8";}
+  else if(/Windows NT 6.1/.test(ua)){os="Windows";osVer="7";}
+  else if(/Mac OS X ([0-9_]+)/.test(ua)){os="macOS";osVer=(ua.match(/Mac OS X ([0-9_]+)/)[1]||"").replace(/_/g,".");}
+  else if(/Android ([0-9.]+)/.test(ua)){os="Android";osVer=ua.match(/Android ([0-9.]+)/)[1]||"";}
+  else if(/(iPhone|iPad).*OS ([0-9_]+)/.test(ua)){os="iOS/iPadOS";osVer=(ua.match(/OS ([0-9_]+)/)[1]||"").replace(/_/g,".");}
+  else if(/CrOS/.test(ua)){os="ChromeOS";}
+  else if(/Linux/.test(ua)){os="Linux";}
+  let browser="Unknown",bVer="";
+  if(/Edg\/([0-9.]+)/.test(ua)){browser="Microsoft Edge";bVer=ua.match(/Edg\/([0-9.]+)/)[1];}
+  else if(/OPR\/([0-9.]+)/.test(ua)){browser="Opera";bVer=ua.match(/OPR\/([0-9.]+)/)[1];}
+  else if(/Firefox\/([0-9.]+)/.test(ua)){browser="Firefox";bVer=ua.match(/Firefox\/([0-9.]+)/)[1];}
+  else if(/Chrome\/([0-9.]+)/.test(ua)){browser="Chrome";bVer=ua.match(/Chrome\/([0-9.]+)/)[1];}
+  else if(/Version\/([0-9.]+).*Safari/.test(ua)){browser="Safari";bVer=ua.match(/Version\/([0-9.]+)/)[1];}
+  const engine = browser==="Firefox"?"Gecko":browser==="Safari"?"WebKit":/AppleWebKit/.test(ua)?"Blink":"Unknown";
+  return {os,osVer,browser,bVer,engine};
+}
+
+/* ---------- collectors (return [{label,value,risk}]) ---------- */
+function collectSystem(){
+  const nav=navigator, ua=nav.userAgent||"", p=parseUA(ua), d=nav.userAgentData;
+  return [
+    {label:"Operating System",value:(p.os+" "+p.osVer).trim(),risk:"high"},
+    {label:"Browser",value:(p.browser+" "+p.bVer).trim(),risk:"high"},
+    {label:"Rendering Engine",value:p.engine},
+    {label:"Platform",value:nn(nav.platform)},
+    {label:"Architecture",value:nn(d&&d.platform?d.platform:nav.oscpu)},
+    {label:"Device Vendor (UA-CH)",value:nn(d&&d.brands?d.brands.map(b=>b.brand+" "+b.version).join(", "):null)},
+    {label:"Mobile Device",value:yesNo(d?d.mobile:/Mobi|Android|iPhone/.test(ua))},
+    {label:"Product Sub",value:nn(nav.productSub)},
+    {label:"Vendor",value:nn(nav.vendor)},
+    {label:"Build ID",value:nn(nav.buildID)},
+    {label:"Cookies Enabled",value:yesNo(nav.cookieEnabled)},
+    {label:"Do Not Track",value:nn(nav.doNotTrack)},
+    {label:"Java Enabled",value:yesNo(nav.javaEnabled&&nav.javaEnabled())},
+    {label:"PDF Viewer",value:yesNo(nav.pdfViewerEnabled)},
+    {label:"Global Privacy Control",value:yesNo(nav.globalPrivacyControl)},
+    {label:"WebDriver (Automation)",value:yesNo(nav.webdriver),risk:nav.webdriver?"warn":"info"},
+    {label:"User Agent (raw)",value:nn(ua)},
+  ];
+}
+function collectHardware(){
+  const nav=navigator, dm=nav.deviceMemory;
+  return [
+    {label:"CPU Logical Cores",value:nn(nav.hardwareConcurrency),risk:"high"},
+    {label:"Approx. Device Memory",value:dm?dm+" GB (≥)":"Unavailable",risk:"high"},
+    {label:"Max Touch Points",value:nn(nav.maxTouchPoints)},
+    {label:"Touch Capable",value:yesNo((nav.maxTouchPoints||0)>0||"ontouchstart"in window)},
+    {label:"Device Pixel Ratio",value:nn(window.devicePixelRatio)},
+    {label:"Pointer: Fine (mouse)",value:yesNo(matchMedia("(pointer: fine)").matches)},
+    {label:"Pointer: Coarse (touch)",value:yesNo(matchMedia("(pointer: coarse)").matches)},
+    {label:"Hover Capable",value:yesNo(matchMedia("(hover: hover)").matches)},
+  ];
+}
+function collectGPU(){
+  const out=[];
+  try{
+    const c=document.createElement("canvas");
+    const gl=c.getContext("webgl")||c.getContext("experimental-webgl");
+    if(!gl)return[{label:"WebGL",value:"Not supported / blocked"}];
+    const dbg=gl.getExtension("WEBGL_debug_renderer_info");
+    out.push({label:"GPU Vendor",value:nn(dbg?gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL):gl.getParameter(gl.VENDOR)),risk:"high"});
+    out.push({label:"GPU Renderer",value:nn(dbg?gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER)),risk:"high"});
+    out.push({label:"WebGL Version",value:nn(gl.getParameter(gl.VERSION))});
+    out.push({label:"Shading Language",value:nn(gl.getParameter(gl.SHADING_LANGUAGE_VERSION))});
+    out.push({label:"Max Texture Size",value:nn(gl.getParameter(gl.MAX_TEXTURE_SIZE)," px")});
+    const v=gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+    out.push({label:"Max Viewport",value:v?v[0]+" x "+v[1]:"Unavailable"});
+    out.push({label:"Max Render Buffer",value:nn(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE))});
+    out.push({label:"Antialiasing",value:yesNo(!!(gl.getContextAttributes()||{}).antialias)});
+    const ext=gl.getSupportedExtensions();
+    out.push({label:"WebGL Extensions",value:ext?ext.length+" supported":"Unavailable"});
+    out.push({label:"WebGL 2.0",value:yesNo(!!c.getContext("webgl2"))});
+  }catch(e){out.push({label:"WebGL",value:"Error querying GPU"});}
+  return out;
+}
+function collectDisplay(){
+  const s=window.screen;
+  return [
+    {label:"Screen Resolution",value:s.width+" x "+s.height,risk:"high"},
+    {label:"Available Screen",value:s.availWidth+" x "+s.availHeight},
+    {label:"Viewport (window)",value:innerWidth+" x "+innerHeight},
+    {label:"Color Depth",value:nn(s.colorDepth,"-bit")},
+    {label:"Pixel Depth",value:nn(s.pixelDepth,"-bit")},
+    {label:"Orientation",value:nn(s.orientation&&s.orientation.type)},
+    {label:"Orientation Angle",value:nn(s.orientation&&s.orientation.angle,"°")},
+    {label:"Color Gamut (P3)",value:yesNo(matchMedia("(color-gamut: p3)").matches)},
+    {label:"HDR Support",value:yesNo(matchMedia("(dynamic-range: high)").matches)},
+    {label:"Prefers Dark Theme",value:yesNo(matchMedia("(prefers-color-scheme: dark)").matches)},
+    {label:"Reduced Motion",value:yesNo(matchMedia("(prefers-reduced-motion: reduce)").matches)},
+    {label:"Screen Left/Top",value:nn(s.availLeft!=null?s.availLeft:screenX)+" / "+nn(s.availTop!=null?s.availTop:screenY)},
+  ];
+}
+function collectLocale(){
+  const nav=navigator, dtf=Intl.DateTimeFormat().resolvedOptions(), now=new Date();
+  const off=-now.getTimezoneOffset()/60;
+  return [
+    {label:"Primary Language",value:nn(nav.language),risk:"high"},
+    {label:"All Languages",value:nn(nav.languages&&nav.languages.join(", "))},
+    {label:"Time Zone",value:nn(dtf.timeZone),risk:"high"},
+    {label:"UTC Offset",value:(off>=0?"+":"")+off+" h"},
+    {label:"Calendar",value:nn(dtf.calendar)},
+    {label:"Numbering System",value:nn(dtf.numberingSystem)},
+    {label:"Local Time",value:now.toLocaleString()},
+    {label:"System Clock (ISO)",value:now.toISOString()},
+    {label:"Resolved Locale",value:nn(new Intl.NumberFormat().resolvedOptions().locale)},
+  ];
+}
+function collectNetwork(){
+  const nav=navigator, c=nav.connection||nav.mozConnection||nav.webkitConnection;
+  const out=[{label:"Online Status",value:yesNo(nav.onLine)}];
+  if(c){
+    out.push({label:"Connection Type",value:nn(c.effectiveType),risk:"high"});
+    out.push({label:"Network Type",value:nn(c.type)});
+    out.push({label:"Downlink Speed",value:nn(c.downlink," Mbps")});
+    out.push({label:"Max Downlink",value:nn(c.downlinkMax," Mbps")});
+    out.push({label:"Round-Trip Time (RTT)",value:nn(c.rtt," ms")});
+    out.push({label:"Data Saver",value:yesNo(c.saveData)});
+  }else out.push({label:"Network Information API",value:"Not supported by this browser"});
+  return out;
+}
+async function collectBattery(){
+  const nav=navigator;
+  if(!nav.getBattery)return[{label:"Battery API",value:"Not supported"}];
+  try{
+    const b=await nav.getBattery();
+    return[
+      {label:"Battery Level",value:Math.round(b.level*100)+"%",risk:"high"},
+      {label:"Charging",value:yesNo(b.charging)},
+      {label:"Time to Full Charge",value:b.chargingTime===Infinity?"N/A":Math.round(b.chargingTime/60)+" min"},
+      {label:"Time to Empty",value:b.dischargingTime===Infinity?"N/A":Math.round(b.dischargingTime/60)+" min"},
+    ];
+  }catch{return[{label:"Battery API",value:"Blocked / unavailable"}];}
+}
+async function collectStorage(){
+  const out=[], nav=navigator;
+  if(nav.storage&&nav.storage.estimate){
+    try{
+      const e=await nav.storage.estimate();
+      const gb=n=>(n/1073741824).toFixed(2);
+      out.push({label:"Storage Quota",value:gb(e.quota||0)+" GB"});
+      out.push({label:"Storage Used",value:gb(e.usage||0)+" GB"});
+      if(e.usageDetails)for(const[k,v]of Object.entries(e.usageDetails))out.push({label:"  • "+k,value:(v/1048576).toFixed(2)+" MB"});
+    }catch{out.push({label:"Storage Estimate",value:"Unavailable"});}
+  }else out.push({label:"Storage API",value:"Not supported"});
+  out.push({label:"localStorage",value:yesNo(!!window.localStorage)});
+  out.push({label:"sessionStorage",value:yesNo(!!window.sessionStorage)});
+  out.push({label:"IndexedDB",value:yesNo(!!window.indexedDB)});
+  return out;
+}
+async function collectMedia(){
+  const nav=navigator;
+  if(!nav.mediaDevices||!nav.mediaDevices.enumerateDevices)return[{label:"Media Devices API",value:"Not supported"}];
+  try{
+    const devs=await nav.mediaDevices.enumerateDevices();
+    const cams=devs.filter(d=>d.kind==="videoinput"), mics=devs.filter(d=>d.kind==="audioinput"), spk=devs.filter(d=>d.kind==="audiooutput");
+    const out=[
+      {label:"Cameras Detected",value:cams.length+"",risk:cams.length?"warn":"info"},
+      {label:"Microphones Detected",value:mics.length+"",risk:mics.length?"warn":"info"},
+      {label:"Speakers/Outputs Detected",value:spk.length+""},
+    ];
+    devs.forEach((d,i)=>out.push({label:"  • "+d.kind,value:d.label||("Device #"+(i+1)+" (label hidden — grant permission)")}));
+    return out;
+  }catch{return[{label:"Media Devices",value:"Enumeration blocked"}];}
+}
+function collectCapabilities(){
+  const w=window,nav=navigator,c=(n,p)=>({label:n,value:p?"Available":"Absent"});
+  return [
+    c("WebRTC",!!w.RTCPeerConnection),c("WebGL",!!w.WebGLRenderingContext),c("WebGL2",!!w.WebGL2RenderingContext),
+    c("WebGPU",!!nav.gpu),c("Web Audio",!!(w.AudioContext||w.webkitAudioContext)),c("WebAssembly",typeof w.WebAssembly==="object"),
+    c("Service Worker",!!nav.serviceWorker),c("Push API",!!w.PushManager),c("Notifications",!!w.Notification),
+    c("Bluetooth",!!nav.bluetooth),c("USB",!!nav.usb),c("Serial",!!nav.serial),c("HID",!!nav.hid),
+    c("Gamepad",!!nav.getGamepads),c("Geolocation",!!nav.geolocation),c("Clipboard",!!nav.clipboard),
+    c("Credentials",!!nav.credentials),c("Share",!!nav.share),c("Vibration",!!nav.vibrate),
+    c("Speech Synthesis",!!w.speechSynthesis),c("Payment Request",!!w.PaymentRequest),c("Idle Detection",!!w.IdleDetector),
+    c("Wake Lock",!!nav.wakeLock),c("Ambient Light",!!w.AmbientLightSensor),c("Accelerometer",!!w.Accelerometer),
+    c("Gyroscope",!!w.Gyroscope),c("Magnetometer",!!w.Magnetometer),c("Device Orientation","ondeviceorientation"in w),
+    c("Device Motion","ondevicemotion"in w),
+  ];
+}
+function detectFonts(){
+  const base=["monospace","sans-serif","serif"];
+  const test=["Arial","Arial Black","Arial Narrow","Calibri","Cambria","Candara","Comic Sans MS","Consolas","Courier New","Georgia","Helvetica","Impact","Lucida Console","Lucida Sans","Palatino Linotype","Segoe UI","Tahoma","Times New Roman","Trebuchet MS","Verdana","Cambria Math","Franklin Gothic","Gill Sans","Century Gothic","Book Antiqua","MS Gothic","MS PGothic","SimSun","Malgun Gothic","Menlo","Monaco","Roboto","Ubuntu","Cantarell","DejaVu Sans","Noto Sans","San Francisco","Optima"];
+  const span=document.createElement("span");
+  span.style.cssText="position:absolute;left:-9999px;font-size:72px;";
+  span.textContent="mmmmmmmmmmlli";document.body.appendChild(span);
+  const def={};for(const b of base){span.style.fontFamily=b;def[b]={w:span.offsetWidth,h:span.offsetHeight};}
+  const found=[];
+  for(const f of test){for(const b of base){span.style.fontFamily="'"+f+"',"+b;if(span.offsetWidth!==def[b].w||span.offsetHeight!==def[b].h){found.push(f);break;}}}
+  document.body.removeChild(span);return found;
+}
+async function sha256(str){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function canvasFP(){
+  try{
+    const c=document.createElement("canvas");c.width=300;c.height=80;const x=c.getContext("2d");
+    x.textBaseline="top";x.font="16px 'Arial'";x.fillStyle="#f60";x.fillRect(10,10,120,40);
+    x.fillStyle="#069";x.fillText("ForensiScan 🔍 0x9A",15,20);
+    x.strokeStyle="rgba(120,200,50,.7)";x.beginPath();x.arc(200,40,30,0,Math.PI*2);x.stroke();
+    return (await sha256(c.toDataURL())).slice(0,32);
+  }catch{return"blocked";}
+}
+async function audioFP(){
+  try{
+    const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC)return"unsupported";
+    const ctx=new AC(1,44100,44100),osc=ctx.createOscillator(),comp=ctx.createDynamicsCompressor();
+    osc.type="triangle";osc.frequency.value=10000;osc.connect(comp);comp.connect(ctx.destination);osc.start(0);
+    const buf=await ctx.startRendering(),ch=buf.getChannelData(0);let s=0;
+    for(let i=4500;i<5000;i++)s+=Math.abs(ch[i]);
+    return (await sha256(s.toString())).slice(0,32);
+  }catch{return"blocked";}
+}
+function requestGeo(){
+  return new Promise(res=>{
+    if(!navigator.geolocation)return res({status:"error",error:"Geolocation API not supported"});
+    navigator.geolocation.getCurrentPosition(
+      p=>res({status:"success",coords:p.coords,timestamp:p.timestamp}),
+      e=>res({status:"error",error:e.message}),
+      {enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  });
+}
+async function fetchIP(){
+  try{const r=await fetch("https://ipapi.co/json/");if(!r.ok)throw new Error("HTTP "+r.status);return await r.json();}
+  catch(e){return{error:e.message||"Network / privacy block"};}
+}
+function localIPs(){
+  return new Promise(res=>{
+    const ips=new Set();
+    try{
+      const pc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+      pc.createDataChannel("");
+      pc.onicecandidate=e=>{
+        if(!e.candidate){pc.close();return res([...ips]);}
+        const m=e.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})|([a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/i);
+        if(m)ips.add(m[0]);
+      };
+      pc.createOffer().then(o=>pc.setLocalDescription(o));
+      setTimeout(()=>{try{pc.close();}catch{}res([...ips]);},3000);
+    }catch{res([]);}
+  });
+}
+
+/* ---------- render helpers ---------- */
+const riskCls={high:"r-high",warn:"r-warn",info:"r-info"};
+function rowsHTML(fields){
+  return '<dl class="rows">'+fields.map(f=>
+    '<div><dt>'+esc(f.label)+'</dt><dd class="'+(riskCls[f.risk]||"r-info")+'">'+esc(f.value)+'</dd></div>').join("")+'</dl>';
+}
+function panel(title,icon,inner,live){
+  return '<section class="panel"><div class="phead"><span class="ic">'+icon+'</span><h2>'+title+'</h2>'+
+    (live?'<span class="live"><span class="dot"></span>live</span>':'')+'</div><div class="pbody">'+inner+'</div></section>';
+}
+function chip(l,v,cls){return '<div class="chip"><div class="l">'+l+'</div><div class="v '+(cls||"")+'">'+esc(v)+'</div></div>';}
+function mapEmbed(lat,lon){const d=.008;const bb=(lon-d)+"%2C"+(lat-d)+"%2C"+(lon+d)+"%2C"+(lat+d);
+  return '<iframe class="map" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox='+bb+'&layer=mapnik&marker='+lat+'%2C'+lon+'"></iframe>';}
+
+/* ---------- state ---------- */
+const S={};
+
+/* ---------- boot sequence ---------- */
+const bootLines=["Initializing forensic subsystem…","Enumerating hardware interfaces…","Probing GPU & rendering pipeline…","Computing device fingerprint…","Resolving network intelligence…","Detecting peripheral devices…"];
+function renderBoot(pct){
+  const active=Math.min(bootLines.length-1,Math.floor(pct/100*bootLines.length));
+  $("#bootlines").innerHTML=bootLines.map((l,i)=>'<div class="'+(i<=active?"done":"")+'">'+(i<=active?"✓":"◌")+" "+l+'</div>').join("");
+  $("#bootbar").style.width=pct+"%";$("#bootpct").textContent=pct+"%";
+}
+
+async function main(){
+  // sync
+  S.system=collectSystem();S.hardware=collectHardware();S.gpu=collectGPU();
+  S.display=collectDisplay();S.locale=collectLocale();S.capabilities=collectCapabilities();
+  S.network=collectNetwork();
+  renderBoot(5);
+  const steps=[
+    async()=>{S.battery=await collectBattery();},
+    async()=>{S.storage=await collectStorage();},
+    async()=>{S.media=await collectMedia();},
+    async()=>{S.fonts=detectFonts();},
+    async()=>{
+      const canvas=await canvasFP(),audio=await audioFP();
+      const seed=[navigator.userAgent,navigator.hardwareConcurrency,screen.width,screen.height,canvas,audio,Intl.DateTimeFormat().resolvedOptions().timeZone].join("|");
+      S.fp={canvas,audio,device:(await sha256(seed)).slice(0,40)};
+    },
+    async()=>{S.ip=await fetchIP();},
+    async()=>{S.localIPs=await localIPs();},
+  ];
+  for(let i=0;i<steps.length;i++){await steps[i]();renderBoot(Math.round((i+1)/steps.length*100));}
+  setTimeout(()=>{$("#boot").style.display="none";$("#app").style.display="block";render();bind();},400);
+}
+
+/* ---------- main render ---------- */
+function render(){
+  const sysV=l=>{const f=S.system.find(x=>x.label===l);return f?f.value:"?";};
+  const hwV=l=>{const f=S.hardware.find(x=>x.label===l);return f?f.value:"?";};
+  const ipOk=S.ip&&!S.ip.error;
+  const ipAddr=ipOk?S.ip.ip:"—";
+  const ipCity=ipOk?((S.ip.city||"?")+", "+(S.ip.region||"")+" "+(S.ip.country_name||"")).trim():"—";
+  const capOn=S.capabilities.filter(c=>c.value==="Available").length;
+  const secs=((performance.now()-startT)/1000).toFixed(1);
+
+  let h="";
+  // header
+  h+='<header class="hd"><div><div class="title-row"><span class="big">🔍</span>'+
+     '<h1>Forensi<span>Scan</span></h1><span class="tag">Investigation Console</span></div>'+
+     '<p class="meta">Passive device intelligence gathering · '+esc(scanTime.toLocaleString())+' · scan completed in '+secs+'s</p></div>'+
+     '<button class="btn" id="exportBtn">⬇ Export JSON Report</button></header>';
+  // notice
+  h+='<div class="notice">⚠ This tool reads only data your browser exposes to any website. Precise GPS location and camera/mic labels require your explicit permission below. For authorized investigation & security-audit use.</div>';
+  // stats
+  h+='<div class="stats">'+
+     chip("Device ID",(S.fp?S.fp.device.slice(0,12)+"…":"…"),"tf")+
+     chip("OS",sysV("Operating System"))+
+     chip("CPU Cores",hwV("CPU Logical Cores"))+
+     chip("Public IP",ipAddr,"r-high")+
+     chip("Location",ipCity,"r-amber")+
+     chip("Capabilities",capOn+"/"+S.capabilities.length,"r-info")+'</div>';
+
+  // geo + ip
+  h+='<div class="grid2">';
+  // geo panel
+  let geoInner='<div class="stack"><p class="muted">Request hardware-level location. On devices with GPS this yields exact coordinates; otherwise Wi-Fi / cell triangulation is used (accuracy varies).</p>'+
+    '<button class="btn" id="geoBtn" style="width:100%">▶ Acquire Precise Location</button><div id="geoResult"></div></div>';
+  h+=panel("Precise Geolocation (GPS)","📍",geoInner);
+  // ip panel
+  let ipInner="";
+  if(!S.ip)ipInner='<p class="muted">◌ Resolving public IP…</p>';
+  else if(S.ip.error)ipInner='<p class="err">✕ Lookup blocked: '+esc(S.ip.error)+'</p>';
+  else{
+    const rows=[["IP Address",S.ip.ip,1],["IP Version",S.ip.version],["City",S.ip.city,1],
+      ["Region",S.ip.region+" ("+(S.ip.region_code||"?")+")"],["Country",S.ip.country_name+" ("+S.ip.country_code+")",1],
+      ["Postal Code",S.ip.postal],["Approx. Coordinates",(S.ip.latitude&&S.ip.longitude)?S.ip.latitude+", "+S.ip.longitude:"?",1],
+      ["Timezone",S.ip.timezone],["UTC Offset",S.ip.utc_offset],["Calling Code",S.ip.country_calling_code],
+      ["Currency",S.ip.currency+" ("+(S.ip.currency_name||"")+")"],["ISP / Org",S.ip.org,1],["ASN",S.ip.asn],["Network",S.ip.network]];
+    ipInner='<dl class="rows">'+rows.map(r=>'<div><dt>'+esc(r[0])+'</dt><dd class="'+(r[2]?"r-amber":"r-slate")+'">'+esc(r[1]==null?"—":r[1])+'</dd></div>').join("")+'</dl>';
+    if(S.ip.latitude&&S.ip.longitude)ipInner+=mapEmbed(S.ip.latitude,S.ip.longitude);
+  }
+  // local ip leak
+  ipInner+='<div class="divtop"><div class="subhead">WebRTC Local IP Leak</div>';
+  if(!S.localIPs)ipInner+='<p class="muted" style="margin-top:.25rem">◌ probing…</p>';
+  else if(S.localIPs.length)ipInner+='<div class="tags" style="margin-top:.25rem">'+S.localIPs.map(ip=>'<span class="pill rose">'+esc(ip)+'</span>').join("")+'</div>';
+  else ipInner+='<p class="ok" style="margin-top:.25rem">No local IPs leaked (protected)</p>';
+  ipInner+='</div>';
+  h+=panel("Network / IP Intelligence","🌐",ipInner,!S.ip);
+  h+='</div>';
+
+  // fingerprint
+  const fpInner='<div class="fpgrid">'+
+    '<div class="fpbox"><div class="l">Composite Device ID</div><div class="v tf">'+esc(S.fp?S.fp.device:"…")+'</div></div>'+
+    '<div class="fpbox"><div class="l">Canvas Hash</div><div class="v tc">'+esc(S.fp?S.fp.canvas:"…")+'</div></div>'+
+    '<div class="fpbox"><div class="l">Audio Hash</div><div class="v te">'+esc(S.fp?S.fp.audio:"…")+'</div></div></div>'+
+    '<p class="muted" style="margin-top:.75rem">These stable hashes can re-identify this device across sessions even without cookies. Derived from GPU, canvas rendering, audio stack, screen, fonts & timezone.</p>';
+  h+=panel("Device Fingerprint","🧬",fpInner);
+
+  // main grid
+  h+='<div class="maingrid">';
+  h+=panel("System &amp; Browser","💻",rowsHTML(S.system));
+  h+=panel("Hardware","⚙️",rowsHTML(S.hardware));
+  h+=panel("GPU / Graphics","🎮",rowsHTML(S.gpu));
+  h+=panel("Display &amp; Screen","🖥️",rowsHTML(S.display));
+  h+=panel("Locale &amp; Time","🕐",rowsHTML(S.locale));
+  h+=panel("Network","📡",rowsHTML(S.network),true);
+  h+=panel("Power / Battery","🔋",rowsHTML(S.battery||[{label:"…",value:"loading"}]));
+  h+=panel("Storage","💾",rowsHTML(S.storage||[{label:"…",value:"loading"}]));
+  h+=panel("Media Devices","📷",rowsHTML(S.media||[{label:"…",value:"loading"}]));
+  // fonts
+  let fontsInner;
+  if(!S.fonts)fontsInner='<p class="muted">◌ probing font stack…</p>';
+  else fontsInner='<p class="muted" style="margin-bottom:.5rem">'+S.fonts.length+' of common set detected</p><div class="tags">'+S.fonts.map(f=>'<span class="pill">'+esc(f)+'</span>').join("")+'</div>';
+  h+=panel("Installed Fonts","🔤",fontsInner);
+  // motion
+  h+=panel("Motion &amp; Orientation","🧭",'<div class="stack" id="motionWrap"><p class="muted">Read device gyroscope / accelerometer orientation (mobile).</p><button class="btn" id="motionBtn" style="width:100%">▶ Enable Orientation Sensors</button></div>');
+  // behavioral
+  h+=panel("Behavioral Telemetry","🖱️",'<dl class="rows" id="behav"></dl>',true);
+  h+='</div>';
+
+  // capabilities
+  const caps='<div class="capgrid">'+S.capabilities.map(c=>'<div class="cap"><span class="n">'+esc(c.label)+'</span><span class="d '+(c.value==="Available"?"on":"")+'"></span></div>').join("")+'</div>';
+  h+='<div class="mt6">'+panel("Feature &amp; API Capability Matrix","🧩",caps)+'</div>';
+
+  h+='<footer>ForensiScan · client-side only · no data leaves this browser except the public IP lookup · '+scanTime.getFullYear()+'</footer>';
+
+  $("#app").innerHTML=h;
+}
+
+/* ---------- interactivity ---------- */
+function bind(){
+  $("#exportBtn").onclick=exportReport;
+  $("#geoBtn").onclick=runGeo;
+  $("#motionBtn").onclick=enableMotion;
+  // behavioral live
+  let moves=0;const bx=$("#behav");
+  function paintBehav(x,y){
+    bx.innerHTML=[
+      ["Cursor X",x+" px"],["Cursor Y",y+" px"],["Mouse Move Events",moves+""],
+      ["Session Uptime",Math.round((performance.now()-startT)/1000)+" s"],
+      ["Page Referrer",document.referrer||"direct"],["Focus State",document.hasFocus()?"Focused":"Background"]
+    ].map(r=>'<div><dt>'+esc(r[0])+'</dt><dd class="r-cyan">'+esc(r[1])+'</dd></div>').join("");
+  }
+  paintBehav(0,0);
+  window.addEventListener("mousemove",e=>{moves++;paintBehav(e.clientX,e.clientY);});
+  setInterval(()=>paintBehav(0,0),1000);
+  // network live
+  const conn=navigator.connection;
+  if(conn&&conn.addEventListener)conn.addEventListener("change",()=>{S.network=collectNetwork();});
+}
+
+async function runGeo(){
+  const btn=$("#geoBtn"),res=$("#geoResult");
+  btn.disabled=true;btn.textContent="◌ Acquiring satellite fix…";
+  const g=await requestGeo();S.geo=g;
+  btn.disabled=false;btn.textContent="▶ Acquire Precise Location";
+  if(g.status==="error"){res.innerHTML='<p class="err" style="margin-top:.75rem">✕ '+esc(g.error)+'</p>';return;}
+  const c=g.coords;
+  const cb=(l,v)=>'<div class="coord"><div class="l">'+l+'</div><div class="v">'+esc(v)+'</div></div>';
+  let html='<div class="coordgrid">'+
+    cb("Latitude",c.latitude.toFixed(6))+cb("Longitude",c.longitude.toFixed(6))+
+    cb("Accuracy","±"+c.accuracy.toFixed(0)+" m")+cb("Altitude",c.altitude!=null?c.altitude.toFixed(1)+" m":"N/A")+
+    cb("Heading",c.heading!=null?c.heading.toFixed(0)+"°":"N/A")+cb("Speed",c.speed!=null?c.speed.toFixed(1)+" m/s":"N/A")+'</div>';
+  html+=mapEmbed(c.latitude,c.longitude);
+  html+='<div class="linkrow"><a target="_blank" rel="noreferrer" href="https://www.google.com/maps?q='+c.latitude+','+c.longitude+'">Open in Google Maps</a>'+
+        '<a target="_blank" rel="noreferrer" href="https://www.openstreetmap.org/?mlat='+c.latitude+'&mlon='+c.longitude+'#map=17/'+c.latitude+'/'+c.longitude+'">Open in OSM</a></div>';
+  // hide the intro text/button, show result
+  btn.style.display="none";
+  $("#geoBtn").previousElementSibling.style.display="none";
+  res.innerHTML=html;
+}
+
+async function enableMotion(){
+  const DME=window.DeviceMotionEvent;
+  if(DME&&DME.requestPermission){try{await DME.requestPermission();}catch{}}
+  const wrap=$("#motionWrap");
+  window.addEventListener("deviceorientation",e=>{
+    wrap.innerHTML='<dl class="rows">'+[
+      ["Alpha (compass Z)",e.alpha!=null?e.alpha.toFixed(2)+"°":"N/A"],
+      ["Beta (front-back tilt)",e.beta!=null?e.beta.toFixed(2)+"°":"N/A"],
+      ["Gamma (left-right tilt)",e.gamma!=null?e.gamma.toFixed(2)+"°":"N/A"],
+      ["Absolute",e.absolute?"Yes":"No"]
+    ].map(r=>'<div><dt>'+esc(r[0])+'</dt><dd class="r-cyan">'+esc(r[1])+'</dd></div>').join("")+'</dl>';
+  });
+}
+
+function fieldsToObj(f){const o={};f.forEach(x=>o[x.label.trim()]=x.value);return o;}
+function exportReport(){
+  const g=S.geo;
+  const report={
+    generatedAt:scanTime.toISOString(),deviceId:S.fp&&S.fp.device,fingerprints:S.fp,
+    system:fieldsToObj(S.system),hardware:fieldsToObj(S.hardware),gpu:fieldsToObj(S.gpu),
+    display:fieldsToObj(S.display),locale:fieldsToObj(S.locale),network:fieldsToObj(S.network),
+    battery:S.battery?fieldsToObj(S.battery):null,storage:S.storage?fieldsToObj(S.storage):null,
+    mediaDevices:S.media?fieldsToObj(S.media):null,capabilities:fieldsToObj(S.capabilities),fonts:S.fonts,
+    geolocation:(g&&g.status==="success"&&g.coords)?{latitude:g.coords.latitude,longitude:g.coords.longitude,accuracy:g.coords.accuracy,altitude:g.coords.altitude,heading:g.coords.heading,speed:g.coords.speed,timestamp:g.timestamp}:(g?g.status:"not requested"),
+    ipIntelligence:S.ip,localIPs:S.localIPs
+  };
+  const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="forensiscan-report-"+Date.now()+".json";a.click();URL.revokeObjectURL(url);
+}
+
+main();
+</script>
+</body>
+</html>
